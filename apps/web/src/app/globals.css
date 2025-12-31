@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+input.no-spin::-webkit-outer-spin-button,
+input.no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input.no-spin[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  html,
+  body {
+    height: 297mm;
+    overflow: hidden;
+  }
+
+  .bordereau-page {
+    width: 190mm;
+    height: 277mm;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .bordereau-print {
+    width: 210mm;
+    height: 297mm;
+    overflow: hidden;
+    padding: 10mm;
+    box-sizing: border-box;
+  }
+
+  .bordereau-scale {
+    transform-origin: top left;
+    transform: scale(var(--bordereau-scale, 1));
+  }
+}

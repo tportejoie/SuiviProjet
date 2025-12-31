@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectType {
+  AT
+  FORFAIT
+}
+
+enum ProjectStatus {
+  PREVU
+  EN_COURS
+  CLOS
+  ARCHIVE
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum SnapshotType {
+  MONTH_END
+  BORDEREAU_GENERATED
+  BORDEREAU_SIGNED
+  RECTIFICATIF
+  MANUAL
+}
+
+enum DeliverableStatus {
+  NON_REMIS
+  REMIS
+  VALIDE
+}
+
+enum TimeEntryType {
+  BO
+  SITE
+}
+
+enum BordereauType {
+  BA
+  BL
+  RECTIFICATIF
+}
+
+enum BordereauStatus {
+  DRAFT
+  GENERATED
+  SENT
+  SIGNED
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  address   String
+  siren     String?
+  siret     String
+  tvaIntra  String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  contacts  Contact[]
+  projects  Project[]
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  clientId  String
+  name      String
+  email     String
+  role      String
+  phone     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  client    Client   @relation(fields: [clientId], references: [id])
+  projects  Project[]
+}
+
+model Project {
+  id              String    @id @default(cuid())
+  projectNumber   String    @unique
+  orderNumber     String
+  orderDate       DateTime
+  orderAmount     Float?
+  quoteNumber     String
+  quoteDate       DateTime
+  clientId        String
+  contactId       String
+  designation     String
+  projectManager  String
+  projectManagerEmail String?
+  type            ProjectType
+  status          ProjectStatus
+  atDaysSoldBO    Float?
+  atDaysSoldSite  Float?
+  atDailyRateBO   Float?
+  atDailyRateSite Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  client          Client    @relation(fields: [clientId], references: [id])
+  contact         Contact   @relation(fields: [contactId], references: [id])
+  timeEntries     TimeEntry[]
+  deliverables    Deliverable[]
+  snapshots       ProjectSituationSnapshot[]
+  locks           PeriodLock[]
+  bordereaux      Bordereau[]
+  bordereauComments BordereauComment[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  role         UserRole  @default(USER)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model CompanySettings {
+  id          String   @id
+  name        String
+  legalForm   String?
+  headquarters String?
+  siren       String?
+  siret       String?
+  tvaNumber   String?
+  capital     String?
+  rcs         String?
+  phone       String?
+  email       String?
+  website     String?
+  logoFileId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  logoFile    FileObject? @relation(fields: [logoFileId], references: [id])
+}
+
+model TimeEntry {
+  id        String       @id @default(cuid())
+  projectId String
+  year      Int
+  month     Int
+  day       Int
+  type      TimeEntryType
+  hours     Float
+  hourSlot  Int        @default(0)
+  comment   String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  project   Project      @relation(fields: [projectId], references: [id])
+
+  @@index([projectId, year, month])
+  @@unique([projectId, year, month, day, type, hourSlot])
+}
+
+model BordereauComment {
+  id        String       @id @default(cuid())
+  projectId String
+  year      Int
+  month     Int
+  day       Int
+  type      TimeEntryType
+  comment   String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  project   Project      @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, year, month, day, type])
+}
+
+model Deliverable {
+  id             String            @id @default(cuid())
+  projectId      String
+  label          String
+  percentage     Float
+  amount         Float?
+  targetDate     DateTime
+  status         DeliverableStatus @default(NON_REMIS)
+  submissionDate DateTime?
+  comment        String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  project        Project           @relation(fields: [projectId], references: [id])
+}
+
+model ProjectSituationSnapshot {
+  id                    String   @id @default(cuid())
+  projectId             String
+  type                  SnapshotType
+  year                  Int?
+  month                 Int?
+  computedAt            DateTime @default(now())
+  computedBy            String
+  sourceRef             String?
+  dataJson              Json
+  supersedesSnapshotId  String?
+  project               Project  @relation(fields: [projectId], references: [id])
+  supersedesSnapshot    ProjectSituationSnapshot? @relation("SnapshotSupersede", fields: [supersedesSnapshotId], references: [id])
+  supersededBy          ProjectSituationSnapshot[] @relation("SnapshotSupersede")
+  bordereaux            Bordereau[]
+  bordereauVersions     BordereauVersion[]
+}
+
+model PeriodLock {
+  id        String   @id @default(cuid())
+  projectId String
+  year      Int
+  month     Int
+  locked    Boolean  @default(false)
+  lockedAt  DateTime?
+  lockedBy  String?
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, year, month])
+}
+
+model Bordereau {
+  id          String           @id @default(cuid())
+  projectId   String
+  type        BordereauType
+  status      BordereauStatus  @default(DRAFT)
+  periodYear  Int?
+  periodMonth Int?
+  snapshotId  String?
+  createdAt   DateTime         @default(now())
+  createdBy   String
+  project     Project          @relation(fields: [projectId], references: [id])
+  snapshot    ProjectSituationSnapshot? @relation(fields: [snapshotId], references: [id])
+  versions    BordereauVersion[]
+  agreement   AdobeAgreement?
+}
+
+model BordereauVersion {
+  id           String   @id @default(cuid())
+  bordereauId  String
+  versionNumber Int
+  fileId       String
+  generatedAt  DateTime @default(now())
+  generatedBy  String
+  snapshotId   String?
+  bordereau    Bordereau @relation(fields: [bordereauId], references: [id])
+  snapshot     ProjectSituationSnapshot? @relation(fields: [snapshotId], references: [id])
+  file         FileObject @relation(fields: [fileId], references: [id])
+}
+
+model FileObject {
+  id          String   @id @default(cuid())
+  storageKey  String
+  fileName    String
+  contentType String
+  size        Int
+  checksum    String?
+  createdAt   DateTime @default(now())
+  versions    BordereauVersion[]
+  companyLogos CompanySettings[]
+}
+
+model AdobeAgreement {
+  id         String   @id @default(cuid())
+  bordereauId String  @unique
+  providerId String
+  status     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  bordereau  Bordereau @relation(fields: [bordereauId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  diffJson   Json
+  actorId    String?
+  actorName  String?
+  createdAt  DateTime @default(now())
+}
