@@ -52,7 +52,7 @@ export const computeAtSnapshot = (input: {
       boRate: rateBO,
       siteRate: rateSite,
     },
-    month: {
+    monthData: {
       boHours: monthHoursBO,
       siteHours: monthHoursSite,
       boDays: monthDaysBO,
