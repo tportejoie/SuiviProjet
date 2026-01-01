@@ -1,4 +1,4 @@
-import { SnapshotType, TimeEntryType } from "@prisma/client";
+import { Prisma, SnapshotType, TimeEntryType } from "@prisma/client";
 import { prisma } from "../prisma";
 
 const HOURS_PER_DAY = 8;
@@ -129,7 +129,7 @@ export const createSnapshot = async (input: {
   month?: number;
   computedBy: string;
   sourceRef?: string;
-  data: Record<string, unknown>;
+  data: Prisma.InputJsonValue;
   supersedesSnapshotId?: string;
 }) => {
   return prisma.projectSituationSnapshot.create({
