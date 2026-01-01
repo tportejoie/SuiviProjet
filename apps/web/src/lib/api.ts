@@ -1,4 +1,4 @@
-import { BordereauComment, Client, CompanySettings, Contact, Deliverable, Project, ProjectSituationSnapshot, TimeEntry, User } from "../types";
+import { BordereauComment, Client, CompanySettings, Contact, Deliverable, PeriodLock, Project, ProjectSituationSnapshot, TimeEntry, User } from "../types";
 
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
@@ -200,7 +200,7 @@ export const generateBordereau = (payload: {
   });
 
 export const getPeriodLock = (projectId: string, year: number, month: number) =>
-  fetchJson(`/api/locks?projectId=${projectId}&year=${year}&month=${month}`);
+  fetchJson<PeriodLock | null>(`/api/locks?projectId=${projectId}&year=${year}&month=${month}`);
 
 export const unlockPeriod = (payload: {
   projectId: string;

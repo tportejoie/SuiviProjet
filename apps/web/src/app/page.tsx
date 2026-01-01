@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/server/auth";
 import AppShell from "../components/AppShell";
+import { UserRole } from "@/types";
 
 export default async function Page() {
   const user = await getSessionUser();
@@ -14,7 +15,7 @@ export default async function Page() {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: user.role as UserRole,
         active: user.active
       }}
     />

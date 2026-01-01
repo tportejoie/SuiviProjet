@@ -1,6 +1,6 @@
 import BordereauDocument from "@/components/BordereauDocument";
 import { prisma } from "@/lib/prisma";
-import { ProjectType } from "@/types";
+import { DeliverableStatus, ProjectType } from "@/types";
 
 interface BordereauPrintPageProps {
   searchParams?: {
@@ -76,7 +76,7 @@ export default async function BordereauPrintPage({ searchParams }: BordereauPrin
           id: deliverable.id,
           label: deliverable.label,
           percentage: deliverable.percentage,
-          status: deliverable.status,
+          status: deliverable.status as DeliverableStatus,
           submissionDate: deliverable.submissionDate
         }))}
         periodYear={periodYear}
