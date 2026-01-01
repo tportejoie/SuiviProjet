@@ -5,6 +5,7 @@ import { ensureProjectAccess, requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { user, response } = await requireUser();
@@ -73,4 +74,5 @@ export async function POST(request: Request) {
     return jsonError("Failed to save entry", 500);
   }
 }
+
 

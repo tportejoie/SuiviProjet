@@ -4,6 +4,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const MONTHS = 12;
 
@@ -80,4 +81,5 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ year, data });
 }
+
 

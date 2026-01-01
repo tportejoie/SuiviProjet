@@ -7,6 +7,7 @@ import { promises as fs } from "fs";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const DEFAULT_COMPANY_ID = "default";
 
@@ -77,3 +78,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, logoUrl: "/api/company/logo" });
 }
+

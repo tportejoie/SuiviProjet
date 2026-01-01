@@ -3,6 +3,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
@@ -263,3 +264,4 @@ export async function POST(request: Request) {
 
   return jsonError("Unsupported OCR/LLM provider", 400);
 }
+

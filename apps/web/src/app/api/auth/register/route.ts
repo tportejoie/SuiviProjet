@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const payload = await request.json();
@@ -39,3 +40,4 @@ export async function POST(request: Request) {
     active: created.active
   }, { status: 201 });
 }
+

@@ -5,6 +5,7 @@ import { createSession, setSessionCookie } from "@/server/auth";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const bootstrapAdminIfNeeded = async (email: string, password: string) => {
   const userCount = await prisma.user.count();
@@ -62,3 +63,4 @@ export async function POST(request: Request) {
     role: user.role,
   });
 }
+

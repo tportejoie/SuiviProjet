@@ -3,6 +3,7 @@ import { getSessionUser } from "@/server/auth";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const user = await getSessionUser();
@@ -17,3 +18,4 @@ export async function GET() {
     active: user.active,
   });
 }
+

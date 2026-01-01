@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/server/authz";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const padProjectNumber = (value: number) => value.toString().padStart(3, "0");
 
@@ -26,3 +27,4 @@ export async function GET(request: Request) {
   }, 0);
   return NextResponse.json({ next: `${prefix}${padProjectNumber(max + 1)}` });
 }
+

@@ -7,6 +7,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError, jsonErrorWithDetail } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -55,4 +56,5 @@ export async function POST(request: Request) {
     return jsonErrorWithDetail("Failed to generate bordereau", message, 500);
   }
 }
+
 

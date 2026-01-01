@@ -4,6 +4,7 @@ import { requireAdmin } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const DEFAULT_COMPANY_ID = "default";
 const DEFAULT_SETTINGS = {
@@ -107,3 +108,4 @@ export async function PUT(request: Request) {
     logoUrl: updated.logoFileId ? "/api/company/logo" : null
   });
 }
+

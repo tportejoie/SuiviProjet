@@ -5,6 +5,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
@@ -34,3 +35,4 @@ export async function POST(request: Request, context: { params: { id: string } }
   });
   return NextResponse.json(result);
 }
+

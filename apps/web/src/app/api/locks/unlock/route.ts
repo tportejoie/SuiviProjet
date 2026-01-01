@@ -4,6 +4,7 @@ import { requireAdmin } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -19,3 +20,4 @@ export async function POST(request: Request) {
     return jsonError("Failed to unlock period", 500);
   }
 }
+

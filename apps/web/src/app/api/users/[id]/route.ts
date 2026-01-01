@@ -5,6 +5,7 @@ import { requireAdmin } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const { response } = await requireAdmin();
@@ -60,4 +61,5 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
 
   return NextResponse.json({ ok: true });
 }
+
 

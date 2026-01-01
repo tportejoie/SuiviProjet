@@ -4,6 +4,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const mapProject = (project: any) => ({
   ...project,
@@ -99,4 +100,5 @@ export async function DELETE(_: Request, context: { params: { id: string } }) {
   await prisma.project.delete({ where: { id: projectId } });
   return NextResponse.json({ ok: true });
 }
+
 

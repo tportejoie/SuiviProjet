@@ -5,6 +5,7 @@ import { requireAdmin } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const { response } = await requireAdmin();
@@ -55,3 +56,4 @@ export async function POST(request: Request) {
     active: created.active,
   }, { status: 201 });
 }
+
