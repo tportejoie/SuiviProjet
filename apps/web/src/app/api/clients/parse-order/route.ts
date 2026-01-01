@@ -244,7 +244,7 @@ export async function POST(request: Request) {
   if (provider === "openai") {
     const result = await parseOrderWithOpenAIImage(file);
     if ("error" in result) {
-      return jsonError(result.error, 400);
+      return jsonError(result.error ?? "Unknown error", 400);
     }
     return NextResponse.json(result.data);
   }
@@ -252,11 +252,11 @@ export async function POST(request: Request) {
   if (provider === "azure") {
     const ocrResult = await parseOrderWithAzureOcr(file);
     if ("error" in ocrResult) {
-      return jsonError(ocrResult.error, 400);
+      return jsonError(ocrResult.error ?? "Unknown OCR error", 400);
     }
     const llmResult = await parseOrderWithOpenAIText(ocrResult.data);
     if ("error" in llmResult) {
-      return jsonError(llmResult.error, 400);
+      return jsonError(llmResult.error ?? "Unknown LLM error", 400);
     }
     return NextResponse.json(llmResult.data);
   }
