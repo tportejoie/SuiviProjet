@@ -1,5 +1,6 @@
 import BordereauDocument from "@/components/BordereauDocument";
 import { prisma } from "@/lib/prisma";
+import { ProjectType } from "@/types";
 
 interface BordereauPrintPageProps {
   searchParams?: {
@@ -58,7 +59,7 @@ export default async function BordereauPrintPage({ searchParams }: BordereauPrin
           orderNumber: project.orderNumber,
           quoteNumber: project.quoteNumber,
           projectManager: project.projectManager,
-          type: project.type,
+          type: project.type as ProjectType,
           atDaysSoldBO: project.atDaysSoldBO,
           atDaysSoldSite: project.atDaysSoldSite
         }}
