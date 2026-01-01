@@ -1,3 +1,4 @@
+import { DeliverableStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/server/authz";
@@ -26,7 +27,10 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   }
 
   const payload = await request.json();
-  const status = payload.status as string;
+  const status = payload.status as DeliverableStatus;
+  if (!Object.values(DeliverableStatus).includes(status)) {
+    return jsonError("Invalid status", 400);
+  }
 
   const updated = await prisma.deliverable.update({
     where: { id: context.params.id },
