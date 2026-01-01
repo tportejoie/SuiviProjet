@@ -10,6 +10,9 @@ export async function GET(request: Request) {
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");

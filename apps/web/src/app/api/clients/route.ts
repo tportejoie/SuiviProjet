@@ -10,6 +10,9 @@ export async function GET() {
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const clients = await prisma.client.findMany({
     where: user.role === "ADMIN"

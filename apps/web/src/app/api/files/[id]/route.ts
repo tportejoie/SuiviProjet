@@ -12,6 +12,9 @@ export async function GET(request: Request, context: { params: { id: string } })
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const file = await prisma.fileObject.findUnique({
     where: { id: context.params.id },

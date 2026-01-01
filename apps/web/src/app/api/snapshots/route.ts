@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/server/authz";
+import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
 
@@ -8,6 +9,9 @@ export async function GET(request: Request) {
   const { user, response } = await requireUser();
   if (response) {
     return response;
+  }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
   }
 
   const { searchParams } = new URL(request.url);

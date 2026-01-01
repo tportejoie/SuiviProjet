@@ -10,6 +10,9 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   if (user.role !== "ADMIN") {
     const client = await prisma.client.findUnique({

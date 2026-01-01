@@ -12,8 +12,11 @@ export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
     if (response) {
-    return response;
-  }
+      return response;
+    }
+    if (!user) {
+      return jsonError("Unauthorized", 401);
+    }
 
     const payload = await request.json();
     const project = await prisma.project.findUnique({

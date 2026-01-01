@@ -20,6 +20,9 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const existing = await prisma.project.findUnique({
     where: { id: context.params.id },
@@ -65,6 +68,9 @@ export async function DELETE(_: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
   if (response) {
     return response;
+  }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
   }
 
   const projectId = context.params.id;

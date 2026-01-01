@@ -10,6 +10,9 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const existing = await prisma.deliverable.findUnique({
     where: { id: context.params.id },

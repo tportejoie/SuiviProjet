@@ -41,6 +41,9 @@ export async function GET() {
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
 
   const where = user.role === "ADMIN"
     ? undefined
@@ -73,6 +76,9 @@ export async function POST(request: Request) {
   const { user, response } = await requireUser();
   if (response) {
     return response;
+  }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
   }
 
   const payload = await request.json();
