@@ -48,6 +48,9 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   if (response) {
     return response;
   }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
+  }
   if (user.id === params.id) {
     return jsonError("Cannot delete self", 400);
   }
