@@ -38,7 +38,7 @@ const getNextProjectNumber = async (year: number) => {
 
 export async function GET() {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -71,7 +71,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -118,3 +118,4 @@ export async function POST(request: Request) {
   });
   return NextResponse.json(mapProject(created), { status: 201 });
 }
+

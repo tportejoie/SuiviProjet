@@ -7,8 +7,11 @@ export const runtime = "nodejs";
 
 export async function GET() {
   const { user, response } = await requireUser();
-  if (response || !user) {
-    return response ?? jsonError("Unauthorized", 401);
+  if (response) {
+    return response;
+  }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
   }
 
   const projects = await prisma.project.findMany({

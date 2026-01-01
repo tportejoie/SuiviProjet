@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -55,3 +55,4 @@ export async function GET(request: Request, context: { params: { id: string } })
     return jsonError("File not available", 404);
   }
 }
+

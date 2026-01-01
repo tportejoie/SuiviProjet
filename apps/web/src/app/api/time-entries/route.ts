@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listMonthEntries, upsertTimeEntry } from "../../../../server/api/imputations";
+import { prisma } from "@/lib/prisma";
 import { ensureProjectAccess, requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
@@ -7,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
-    if (response || !user) {
+    if (response) {
       return response;
     }
 
@@ -66,3 +67,4 @@ export async function POST(request: Request) {
     return jsonError("Failed to save entry", 500);
   }
 }
+

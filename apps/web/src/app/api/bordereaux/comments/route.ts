@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -78,3 +78,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json(comment);
 }
+

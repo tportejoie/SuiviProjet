@@ -8,8 +8,11 @@ export const runtime = "nodejs";
 
 export async function POST(request: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
+  }
+  if (!user) {
+    return jsonError("Unauthorized", 401);
   }
 
   const bordereau = await prisma.bordereau.findUnique({

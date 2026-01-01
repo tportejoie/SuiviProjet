@@ -8,7 +8,7 @@ const MONTHS = 12;
 
 export async function GET(request: Request) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -76,3 +76,4 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ year, data });
 }
+

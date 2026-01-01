@@ -45,7 +45,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const { user, response } = await requireAdmin();
-  if (response || !user) {
+  if (response) {
     return response;
   }
   if (user.id === params.id) {
@@ -57,3 +57,4 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
 
   return NextResponse.json({ ok: true });
 }
+

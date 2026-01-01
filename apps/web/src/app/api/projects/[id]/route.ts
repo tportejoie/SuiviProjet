@@ -17,7 +17,7 @@ const mapProject = (project: any) => ({
 
 export async function PATCH(request: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -63,7 +63,7 @@ export async function PATCH(request: Request, context: { params: { id: string } 
 
 export async function DELETE(_: Request, context: { params: { id: string } }) {
   const { user, response } = await requireUser();
-  if (response || !user) {
+  if (response) {
     return response;
   }
 
@@ -93,3 +93,4 @@ export async function DELETE(_: Request, context: { params: { id: string } }) {
   await prisma.project.delete({ where: { id: projectId } });
   return NextResponse.json({ ok: true });
 }
+

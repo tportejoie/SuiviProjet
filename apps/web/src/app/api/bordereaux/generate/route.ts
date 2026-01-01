@@ -11,9 +11,9 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
-    if (response || !user) {
-      return response;
-    }
+    if (response) {
+    return response;
+  }
 
     const payload = await request.json();
     const project = await prisma.project.findUnique({
@@ -52,3 +52,4 @@ export async function POST(request: Request) {
     return jsonErrorWithDetail("Failed to generate bordereau", message, 500);
   }
 }
+

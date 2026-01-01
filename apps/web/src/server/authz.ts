@@ -6,7 +6,7 @@ import { jsonError } from "./http";
 
 type AuthResult = {
   user: User | null;
-  response: NextResponse | null;
+  response?: NextResponse;
 };
 
 export const requireUser = async (): Promise<AuthResult> => {
@@ -17,7 +17,7 @@ export const requireUser = async (): Promise<AuthResult> => {
       response: jsonError("Unauthorized", 401),
     };
   }
-  return { user, response: null };
+  return { user };
 };
 
 export const requireAdmin = async (): Promise<AuthResult> => {
@@ -31,7 +31,7 @@ export const requireAdmin = async (): Promise<AuthResult> => {
       response: jsonError("Forbidden", 403),
     };
   }
-  return { user, response: null };
+  return { user };
 };
 
 export const ensureProjectAccess = async (

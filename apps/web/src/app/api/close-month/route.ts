@@ -8,9 +8,9 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   try {
     const { user, response } = await requireUser();
-    if (response || !user) {
-      return response;
-    }
+    if (response) {
+    return response;
+  }
 
     const payload = await request.json();
     const accessResponse = await ensureProjectAccess(payload.projectId, user);
@@ -26,3 +26,4 @@ export async function POST(request: Request) {
     return jsonError("Failed to close month", 500);
   }
 }
+
