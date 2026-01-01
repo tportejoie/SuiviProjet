@@ -1,10 +1,11 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 
 interface AuditInput {
   entityType: string;
   entityId: string;
   action: string;
-  diffJson: Record<string, unknown>;
+  diffJson: Prisma.InputJsonValue;
   actorId?: string;
   actorName?: string;
 }
