@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { login, registerUser } from '../lib/api';
 import Logo from './Logo';
 
@@ -10,6 +11,8 @@ const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -80,24 +83,44 @@ const LoginForm: React.FC = () => {
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Mot de passe</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
           </div>
           {mode === 'register' && (
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Confirmer le mot de passe</label>
-              <input
-                type="password"
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPasswordConfirm ? "text" : "password"}
+                  value={passwordConfirm}
+                  onChange={(e) => setPasswordConfirm(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm pr-10"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm((prev) => !prev)}
+                  className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-slate-600"
+                  aria-label={showPasswordConfirm ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                >
+                  {showPasswordConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           )}
           <button
