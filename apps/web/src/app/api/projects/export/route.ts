@@ -24,7 +24,7 @@ export async function GET() {
   });
 
   const hoursByProject = await prisma.timeEntry.groupBy({
-    by: ["projectId"],
+    by: ["projectId", "type"],
     _sum: { hours: true },
   });
 
@@ -39,7 +39,9 @@ export async function GET() {
     where: { status: { in: ["REMIS", "VALIDE"] } },
   });
 
-  const hoursMap = new Map(hoursByProject.map(item => [item.projectId, item._sum.hours ?? 0]));
+  const hoursMap = new Map(
+    hoursByProject.map(item => [`${item.projectId}:${item.type}`, item._sum.hours ?? 0])
+  );
   const totalMap = new Map(deliverablesTotal.map(item => [item.projectId, item._sum.percentage ?? 0]));
   const completedMap = new Map(deliverablesCompleted.map(item => [item.projectId, item._sum.percentage ?? 0]));
 
@@ -59,16 +61,23 @@ export async function GET() {
     { header: "Date devis", key: "quoteDate", width: 14 },
     { header: "Chef de projet", key: "projectManager", width: 20 },
     { header: "Avancement (%)", key: "progress", width: 16 },
-    { header: "Restant (jours AT / % non livre)", key: "remaining", width: 24 },
+    { header: "Restant BO (jours)", key: "remainingBo", width: 18 },
+    { header: "Restant SITE (jours)", key: "remainingSite", width: 20 },
+    { header: "Restant (%) Forfait", key: "remainingForfait", width: 18 },
   ];
 
   sheet.getRow(1).font = { bold: true };
   sheet.views = [{ state: "frozen", ySplit: 1 }];
 
   projects.forEach(project => {
-    const hours = hoursMap.get(project.id) ?? 0;
-    const soldDays = (project.atDaysSoldBO ?? 0) + (project.atDaysSoldSite ?? 0);
-    const consumedDays = hours / 8;
+    const hoursBo = hoursMap.get(`${project.id}:BO`) ?? 0;
+    const hoursSite = hoursMap.get(`${project.id}:SITE`) ?? 0;
+    const soldDaysBo = project.atDaysSoldBO ?? 0;
+    const soldDaysSite = project.atDaysSoldSite ?? 0;
+    const soldDays = soldDaysBo + soldDaysSite;
+    const consumedDaysBo = hoursBo / 8;
+    const consumedDaysSite = hoursSite / 8;
+    const consumedDays = consumedDaysBo + consumedDaysSite;
     const totalPercentage = totalMap.get(project.id) ?? 0;
     const completedPercentage = completedMap.get(project.id) ?? 0;
 
@@ -79,9 +88,15 @@ export async function GET() {
       progress = totalPercentage > 0 ? Math.min(1, completedPercentage / totalPercentage) : 0;
     }
 
-    const remainingValue = project.type === "AT"
-      ? Number(Math.max(0, soldDays - consumedDays).toFixed(3))
-      : Number((Math.max(0, 1 - progress) * 100).toFixed(2));
+    const remainingBo = project.type === "AT"
+      ? Number(Math.max(0, soldDaysBo - consumedDaysBo).toFixed(3))
+      : null;
+    const remainingSite = project.type === "AT"
+      ? Number(Math.max(0, soldDaysSite - consumedDaysSite).toFixed(3))
+      : null;
+    const remainingForfait = project.type !== "AT"
+      ? Number((Math.max(0, 1 - progress) * 100).toFixed(2))
+      : null;
 
     sheet.addRow({
       projectNumber: project.projectNumber,
@@ -96,7 +111,9 @@ export async function GET() {
       quoteDate: project.quoteDate,
       projectManager: project.projectManager,
       progress: Number((progress * 100).toFixed(2)),
-      remaining: remainingValue,
+      remainingBo,
+      remainingSite,
+      remainingForfait,
     });
   });
 
@@ -104,7 +121,9 @@ export async function GET() {
   sheet.getColumn("orderDate").numFmt = "dd/mm/yyyy";
   sheet.getColumn("quoteDate").numFmt = "dd/mm/yyyy";
   sheet.getColumn("progress").numFmt = "0.00";
-  sheet.getColumn("remaining").numFmt = "0.00";
+  sheet.getColumn("remainingBo").numFmt = "0.00";
+  sheet.getColumn("remainingSite").numFmt = "0.00";
+  sheet.getColumn("remainingForfait").numFmt = "0.00";
 
   const buffer = await workbook.xlsx.writeBuffer();
   const fileName = `projets-export-${new Date().toISOString().slice(0, 10)}.xlsx`;
