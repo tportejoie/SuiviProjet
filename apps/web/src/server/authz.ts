@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { User } from "@prisma/client";
-import { prisma } from "../../server/prisma";
+import { prisma } from "@/server/prisma";
 import { getSessionUser } from "./auth";
 import { jsonError } from "./http";
 

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { User, UserRole } from '../types';
-import { createUser, deleteUser, getUsers, updateUser } from '../lib/api';
+import { User, UserRole } from '@/types';
+import { createUser, deleteUser, getUsers, updateUser } from '@/lib/api';
 
 interface UserListProps {
   currentUser: User;

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
-import { prisma } from "../../server/prisma";
+import { prisma } from "@/server/prisma";
 
 export const SESSION_COOKIE = "jamae_session";
 const SESSION_DAYS = Number(process.env.AUTH_SESSION_DAYS || 7);

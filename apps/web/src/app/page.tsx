@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/server/auth";
-import AppShell from "../components/AppShell";
+import AppShell from "@/components/AppShell";
 import { UserRole } from "@/types";
 
 export default async function Page() {

@@ -1,5 +1,5 @@
 import { SnapshotType } from "@prisma/client";
-import { prisma } from "../prisma";
+import { prisma } from "@/server/prisma";
 import { createSnapshot } from "../services/snapshots";
 import { unlockPeriod } from "../services/locks";
 import { writeAuditLog } from "../services/audit";

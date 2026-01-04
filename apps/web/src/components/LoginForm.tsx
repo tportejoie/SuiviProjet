@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { login, registerUser } from '../lib/api';
+import { login, registerUser } from '@/lib/api';
 import Logo from './Logo';
 
 const LoginForm: React.FC = () => {

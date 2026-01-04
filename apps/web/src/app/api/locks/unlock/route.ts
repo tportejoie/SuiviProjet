@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminUnlockPeriod } from "../../../../../server/api/locks";
+import { adminUnlockPeriod } from "@/server/api/locks";
 import { requireAdmin } from "@/server/authz";
 import { jsonError } from "@/server/http";
 

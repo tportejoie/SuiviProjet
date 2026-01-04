@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("../server/prisma", () => ({
+vi.mock("@/server/prisma", () => ({
   prisma: {
     periodLock: {
       findUnique: vi.fn().mockResolvedValue({ locked: true })
@@ -8,7 +8,7 @@ vi.mock("../server/prisma", () => ({
   }
 }));
 
-import { assertNotLocked } from "../server/services/locks";
+import { assertNotLocked } from "@/server/services/locks";
 
 describe("assertNotLocked", () => {
   it("throws when a period is locked", async () => {

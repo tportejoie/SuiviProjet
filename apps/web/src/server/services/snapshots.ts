@@ -1,5 +1,5 @@
 import { Prisma, SnapshotType, TimeEntryType } from "@prisma/client";
-import { prisma } from "../prisma";
+import { prisma } from "@/server/prisma";
 
 const HOURS_PER_DAY = 8;
 

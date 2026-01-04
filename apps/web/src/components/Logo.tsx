@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { CompanySettings } from '../types';
-import { getCompanySettings } from '../lib/api';
+import { CompanySettings } from '@/types';
+import { getCompanySettings } from '@/lib/api';
 
 interface LogoProps {
   className?: string;

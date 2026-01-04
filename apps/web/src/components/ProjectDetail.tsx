@@ -10,9 +10,9 @@ import {
   Deliverable,
   DeliverableStatus,
   ProjectSituationSnapshot
-} from '../types';
+} from '@/types';
 import { deliverableStatusLabel, formatCurrency, projectStatusLabel } from '../utils';
-import { getAllTimeEntries, getDeliverables, getSnapshots, updateDeliverableStatus } from '../lib/api';
+import { getAllTimeEntries, getDeliverables, getSnapshots, updateDeliverableStatus } from '@/lib/api';
 import {
   Info,
   Clock,

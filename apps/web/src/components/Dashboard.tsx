@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Project, Client, ProjectSituationSnapshot, ProjectType } from '../types';
+import { Project, Client, ProjectSituationSnapshot, ProjectType } from '@/types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { formatCurrency } from '../utils';
-import { getAllTimeEntries, getDeliverables, getProductionData } from '../lib/api';
+import { getAllTimeEntries, getDeliverables, getProductionData } from '@/lib/api';
 
 interface DashboardProps {
   projects: Project[];

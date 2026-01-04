@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CompanySettings } from "../types";
-import { getCompanySettings, updateCompanySettings, uploadCompanyLogo } from "../lib/api";
+import { CompanySettings } from "@/types";
+import { getCompanySettings, updateCompanySettings, uploadCompanyLogo } from "@/lib/api";
 
 const emptySettings: CompanySettings = {
   id: "default",

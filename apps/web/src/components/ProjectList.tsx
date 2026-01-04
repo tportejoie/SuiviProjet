@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Client, Contact, Project, ProjectStatus, ProjectType, User, UserRole } from '../types';
+import { Client, Contact, Project, ProjectStatus, ProjectType, User, UserRole } from '@/types';
 import { Plus, Search, Filter, ArrowRight, Pencil, Trash2, Download } from 'lucide-react';
-import { createContact, createProject, deleteProject, getNextProjectNumber, updateProject } from '../lib/api';
+import { createContact, createProject, deleteProject, getNextProjectNumber, updateProject } from '@/lib/api';
 
 interface ProjectListProps {
   projects: Project[];
@@ -153,14 +153,19 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, clients, contacts, 
     setIsOpen(true);
   };
 
-  const handleDelete = async (project: Project) => {
-    const confirmed = window.confirm(`Supprimer le projet ${project.projectNumber} - ${project.designation} ?`);
+  const handleDelete = async (project: Project, force = false) => {
+    const confirmMessage = force
+      ? `SUPPRESSION DEFINITIVE\n\nCe projet et toutes ses donnees liees seront supprimes de facon irreversible.\n\nProjet: ${project.projectNumber} - ${project.designation}\n\nConfirmer la suppression forcee ?`
+      : `Supprimer le projet ${project.projectNumber} - ${project.designation} ?`;
+    const confirmed = window.confirm(confirmMessage);
     if (!confirmed) return;
     try {
-      await deleteProject(project.id);
+      await deleteProject(project.id, { force });
       onDeleted(project.id);
     } catch (err) {
-      setError('Impossible de supprimer le projet car des donnees sont deja liees (imputations, livrables, snapshots ou bordereaux).');
+      setError(force
+        ? 'Suppression forcee impossible.'
+        : 'Impossible de supprimer le projet car des donnees sont deja liees (imputations, livrables, snapshots ou bordereaux).');
     }
   };
 
@@ -390,14 +395,24 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, clients, contacts, 
                   <button onClick={() => openEdit(project)} className="text-slate-400 hover:text-slate-600">
                     <Pencil size={14} />
                   </button>
-                  <button
-                    onClick={() => handleDelete(project)}
-                    disabled={hasData}
-                    title={hasData ? 'Suppression impossible: donnees liees' : 'Supprimer'}
-                    className="text-rose-400 hover:text-rose-600 disabled:text-slate-300 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {currentUser.role === UserRole.ADMIN && hasData ? (
+                    <button
+                      onClick={() => handleDelete(project, true)}
+                      title="Suppression forcee (admin)"
+                      className="text-rose-400 hover:text-rose-600"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleDelete(project)}
+                      disabled={hasData}
+                      title={hasData ? 'Suppression impossible: donnees liees' : 'Supprimer'}
+                      className="text-rose-400 hover:text-rose-600 disabled:text-slate-300 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
 

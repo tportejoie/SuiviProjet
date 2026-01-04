@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Project, TimeEntry, PeriodLock, User, UserRole } from '../types';
+import { Project, TimeEntry, PeriodLock, User, UserRole } from '@/types';
 import { getDaysInMonth, getMonthName, calculateATMonthTotals } from '../utils';
-import { closeMonth, getPeriodLock, getTimeEntries, unlockPeriod, upsertTimeEntry } from '../lib/api';
+import { closeMonth, getPeriodLock, getTimeEntries, unlockPeriod, upsertTimeEntry } from '@/lib/api';
 import { Lock, FileCheck, ShieldAlert, CalendarClock } from 'lucide-react';
 
 interface ImputationManagerProps {

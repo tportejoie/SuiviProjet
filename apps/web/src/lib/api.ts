@@ -1,4 +1,4 @@
-import { BordereauComment, Client, CompanySettings, Contact, Deliverable, PeriodLock, Project, ProjectSituationSnapshot, TimeEntry, User } from "../types";
+import { BordereauComment, Client, CompanySettings, Contact, Deliverable, PeriodLock, Project, ProjectSituationSnapshot, TimeEntry, User } from "@/types";
 
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
@@ -39,6 +39,13 @@ export const updateClient = (clientId: string, payload: {
     method: "PATCH",
     body: JSON.stringify(payload)
   });
+
+export const deleteClient = (clientId: string, options?: { force?: boolean }) => {
+  const forceParam = options?.force ? "?force=1" : "";
+  return fetchJson(`/api/clients/${clientId}${forceParam}`, {
+    method: "DELETE"
+  });
+};
 
 export const parseClientOrder = (file: File) => {
   const formData = new FormData();
@@ -126,10 +133,12 @@ export const updateProject = (projectId: string, payload: {
     body: JSON.stringify(payload)
   });
 
-export const deleteProject = (projectId: string) =>
-  fetchJson(`/api/projects/${projectId}`, {
+export const deleteProject = (projectId: string, options?: { force?: boolean }) => {
+  const forceParam = options?.force ? "?force=1" : "";
+  return fetchJson(`/api/projects/${projectId}${forceParam}`, {
     method: "DELETE"
   });
+};
 
 export const getSnapshots = (projectId?: string) => {
   const url = projectId ? `/api/snapshots?projectId=${projectId}` : "/api/snapshots";

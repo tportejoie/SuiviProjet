@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { BordereauComment, CompanySettings, ProjectType, DeliverableStatus } from "../types";
+import { BordereauComment, CompanySettings, ProjectType, DeliverableStatus } from "@/types";
 import Logo from "./Logo";
 import { getMonthName } from "../utils";
 import { computeBordereauScale } from "./BordereauScale";
-import { getCompanySettings } from "../lib/api";
+import { getCompanySettings } from "@/lib/api";
 
 interface BordereauDocumentProps {
   project: {

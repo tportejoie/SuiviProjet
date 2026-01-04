@@ -1,13 +1,12 @@
-import { DeliverableStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/server/authz";
+import { ensureProjectAccess, requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function PATCH(request: Request, context: { params: { id: string } }) {
+export async function GET(request: Request) {
   const { user, response } = await requireUser();
   if (response) {
     return response;
@@ -16,32 +15,23 @@ export async function PATCH(request: Request, context: { params: { id: string } 
     return jsonError("Unauthorized", 401);
   }
 
-  const existing = await prisma.deliverable.findUnique({
-    where: { id: context.params.id },
-    select: { project: { select: { projectManagerEmail: true } } },
+  const { searchParams } = new URL(request.url);
+  const projectId = searchParams.get("projectId");
+
+  if (!projectId) {
+    return jsonError("Missing projectId", 400);
+  }
+
+  const accessResponse = await ensureProjectAccess(projectId, user);
+  if (accessResponse) {
+    return accessResponse;
+  }
+
+  const deliverables = await prisma.deliverable.findMany({
+    where: { projectId },
+    orderBy: { targetDate: "asc" }
   });
-  if (!existing) {
-    return jsonError("Not found", 404);
-  }
-  if (user.role !== "ADMIN" && existing.project.projectManagerEmail !== user.email) {
-    return jsonError("Forbidden", 403);
-  }
-
-  const payload = await request.json();
-  const status = payload.status as DeliverableStatus;
-  if (!Object.values(DeliverableStatus).includes(status)) {
-    return jsonError("Invalid status", 400);
-  }
-
-  const updated = await prisma.deliverable.update({
-    where: { id: context.params.id },
-    data: {
-      status,
-      submissionDate: status === "REMIS" ? new Date() : undefined
-    }
-  });
-
-  return NextResponse.json(updated);
+  return NextResponse.json(deliverables);
 }
 
 

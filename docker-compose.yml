@@ -16,10 +16,13 @@ services:
   web:
     build:
       context: ./apps/web
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://jamae:jamae@db:5432/jamae_project?schema=public
-      NEXTAUTH_URL: http://localhost:3000
+      APP_BASE_URL: http://localhost:3000
+      AUTH_SESSION_DAYS: "7"
+      FILE_STORAGE_PATH: /app/storage
     env_file:
       - ./apps/web/.env
     ports:

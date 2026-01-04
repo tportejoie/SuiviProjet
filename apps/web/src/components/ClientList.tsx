@@ -1,18 +1,34 @@
-
 'use client';
 
 import React, { useState } from 'react';
-import { Client } from '../types';
-import { Plus, Search, MoreHorizontal, Building2, Pencil } from 'lucide-react';
-import { createClient, parseClientOrder, updateClient } from '../lib/api';
+import { Client, User, UserRole } from '@/types';
+import { Plus, Search, Building2, Pencil, Trash2 } from 'lucide-react';
+import { createClient, deleteClient, parseClientOrder, updateClient } from '@/lib/api';
 
 interface ClientListProps {
   clients: Client[];
   contacts: { clientId: string; active: boolean }[];
+  currentUser: User;
   onCreated: (client: Client) => void;
+  onDeleted: (clientId: string) => void;
 }
 
-const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated }) => {
+type ClientFormState = {
+  name: string;
+  address: string;
+  siren: string;
+  siret: string;
+  tvaIntra: string;
+  notes: string;
+};
+
+const ClientList: React.FC<ClientListProps> = ({
+  clients,
+  contacts,
+  currentUser,
+  onCreated,
+  onDeleted
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
@@ -20,7 +36,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
   const [isParsing, setIsParsing] = useState(false);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ClientFormState>({
     name: '',
     address: '',
     siren: '',
@@ -29,8 +45,8 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
     notes: ''
   });
 
-  const updateField = (key: keyof typeof form, value: string) => {
-    setForm(prev => ({ ...prev, [key]: value }));
+  const updateField = (key: keyof ClientFormState, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const resetForm = () => {
@@ -80,7 +96,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
           name: form.name,
           address: form.address,
           siren: form.siren || undefined,
-          siret: form.siret || "",
+          siret: form.siret || '',
           tvaIntra: form.tvaIntra || undefined,
           notes: form.notes || undefined
         });
@@ -90,7 +106,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
           name: form.name,
           address: form.address,
           siren: form.siren || undefined,
-          siret: form.siret || "",
+          siret: form.siret || '',
           tvaIntra: form.tvaIntra || undefined,
           notes: form.notes || undefined
         });
@@ -100,7 +116,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
       setIsOpen(false);
       setIsEditing(false);
       setEditingClientId(null);
-    } catch (err) {
+    } catch {
       setError(isEditing ? 'Impossible de mettre a jour le client.' : 'Impossible de creer le client.');
     } finally {
       setIsSaving(false);
@@ -133,7 +149,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
         throw new Error(message || 'Parse failed');
       }
       const data = await response.json();
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         name: data.name || prev.name,
         address: data.address || prev.address,
@@ -146,10 +162,31 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
         setParseWarnings(data.warnings);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Impossible d\'analyser la commande.';
+      const errorMessage = err instanceof Error ? err.message : "Impossible d'analyser la commande.";
       setError(errorMessage);
     } finally {
       setIsParsing(false);
+    }
+  };
+
+  const handleDelete = async (client: Client, force = false) => {
+    const confirmMessage = force
+      ? 'SUPPRESSION DEFINITIVE\n\nLe client, ses contacts et tous les projets associes seront supprimes de facon irreversible.\n\nClient: '
+        + client.name
+        + '\n\nConfirmer la suppression forcee ?'
+      : 'Supprimer le client '
+        + client.name
+        + ' ?\n\nCette action est definitive.';
+    const confirmed = window.confirm(confirmMessage);
+    if (!confirmed) return;
+    setError(null);
+    try {
+      await deleteClient(client.id, { force });
+      onDeleted(client.id);
+    } catch {
+      setError(force
+        ? 'Suppression forcee impossible.'
+        : 'Impossible de supprimer le client car des donnees sont liees (contacts ou projets).');
     }
   };
 
@@ -175,9 +212,9 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
         <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <div className="relative w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Rechercher un client, SIREN..." 
+            <input
+              type="text"
+              placeholder="Rechercher un client, SIREN..."
               className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
             />
           </div>
@@ -194,7 +231,7 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {clients.map(client => (
+            {clients.map((client) => (
               <tr key={client.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-3">
@@ -213,17 +250,38 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
                 </td>
                 <td className="px-6 py-4 text-center">
                   <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">
-                    {contacts.filter(c => c.clientId === client.id && c.active).length} actifs
+                    {contacts.filter((c) => c.clientId === client.id && c.active).length} actifs
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() => startEdit(client)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                  >
-                    <Pencil size={14} />
-                    Modifier
-                  </button>
+                  <div className="inline-flex items-center gap-2">
+                    <button
+                      onClick={() => startEdit(client)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                    >
+                      <Pencil size={14} />
+                      Modifier
+                    </button>
+                    {currentUser.role === UserRole.ADMIN ? (
+                      <button
+                        onClick={() => handleDelete(client, true)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                        title="Suppression forcee (admin)"
+                      >
+                        <Trash2 size={14} />
+                        Supprimer
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleDelete(client)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -290,22 +348,22 @@ const ClientList: React.FC<ClientListProps> = ({ clients, contacts, onCreated })
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SIREN</label>
-                <input
-                  value={form.siren}
-                  onChange={(e) => updateField('siren', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SIRET</label>
-                <input
-                  inputMode="numeric"
-                  pattern="\d{14}"
-                  value={form.siret}
-                  onChange={(e) => updateField('siret', e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SIREN</label>
+                  <input
+                    value={form.siren}
+                    onChange={(e) => updateField('siren', e.target.value)}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SIRET</label>
+                  <input
+                    inputMode="numeric"
+                    pattern="\\d{14}"
+                    value={form.siret}
+                    onChange={(e) => updateField('siret', e.target.value)}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  />
                 </div>
               </div>
               <div>

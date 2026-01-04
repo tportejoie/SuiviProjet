@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/server/authz";
-import { writeFileToStorage } from "../../../../../server/services/storage";
+import { writeFileToStorage } from "@/server/services/storage";
 import path from "path";
 import { promises as fs } from "fs";
 import { jsonError } from "@/server/http";

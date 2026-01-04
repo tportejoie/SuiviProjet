@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listMonthEntries, upsertTimeEntry } from "../../../../server/api/imputations";
+import { listMonthEntries, upsertTimeEntry } from "@/server/api/imputations";
 import { prisma } from "@/lib/prisma";
 import { ensureProjectAccess, requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";

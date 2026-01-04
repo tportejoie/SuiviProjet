@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ProjectSituationSnapshot, SnapshotType } from '../types';
-import { getBordereaux } from '../lib/api';
+import { ProjectSituationSnapshot, SnapshotType } from '@/types';
+import { getBordereaux } from '@/lib/api';
 import { History, FileCheck, CheckCircle2, AlertTriangle, User } from 'lucide-react';
 
 interface SnapshotTimelineProps {

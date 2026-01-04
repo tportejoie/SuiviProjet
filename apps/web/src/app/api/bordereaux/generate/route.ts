@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { renderUrlToPdf } from "../../../../../server/services/pdf";
-import { writeFileToStorage } from "../../../../../server/services/storage";
-import { generateBordereau } from "../../../../../server/api/bordereaux";
+import { renderUrlToPdf } from "@/server/services/pdf";
+import { writeFileToStorage } from "@/server/services/storage";
+import { generateBordereau } from "@/server/api/bordereaux";
 import { requireUser } from "@/server/authz";
 import { jsonError, jsonErrorWithDetail } from "@/server/http";
 

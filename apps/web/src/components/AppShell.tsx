@@ -11,8 +11,8 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { Project, Client, ProjectType, Contact, ProjectSituationSnapshot, User, UserRole } from '../types';
-import { getClients, getContacts, getProjects, getSnapshots, logout, updateProjectManager } from '../lib/api';
+import { Project, Client, ProjectType, Contact, ProjectSituationSnapshot, User, UserRole } from '@/types';
+import { getClients, getContacts, getProjects, getSnapshots, logout, updateProjectManager } from '@/lib/api';
 import Dashboard from './Dashboard';
 import ClientList from './ClientList';
 import ProjectList from './ProjectList';
@@ -180,6 +180,7 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
             <ClientList
               clients={clients}
               contacts={contacts}
+              currentUser={currentUser}
               onCreated={(client) => setClients(prev => {
                 const exists = prev.some(c => c.id === client.id);
                 if (exists) {
@@ -187,6 +188,7 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
                 }
                 return [client, ...prev];
               })}
+              onDeleted={(clientId) => setClients(prev => prev.filter(c => c.id !== clientId))}
             />
           )}
           {currentView === 'projects' && (

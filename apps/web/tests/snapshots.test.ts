@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TimeEntryType } from "@prisma/client";
-import { computeAtSnapshot } from "../server/services/snapshots";
+import { computeAtSnapshot } from "@/server/services/snapshots";
 
 describe("computeAtSnapshot", () => {
   it("computes month and cumulative totals", () => {
@@ -25,8 +25,8 @@ describe("computeAtSnapshot", () => {
       ]
     });
 
-    expect(result.month.boDays).toBe(1);
-    expect(result.month.siteDays).toBe(0.5);
+    expect(result.monthData.boDays).toBe(1);
+    expect(result.monthData.siteDays).toBe(0.5);
     expect(result.cumulative.boDays).toBe(2);
     expect(result.remaining.boDays).toBe(8);
     expect(result.alerts.exceededSold).toBe(false);

@@ -38,6 +38,19 @@ npm run dev
 npm run test
 ```
 
+## Structure
+
+- Application Next.js: `apps/web`
+- API et logique serveur: `apps/web/src/server`
+- Prisma: `apps/web/prisma`
+- Alias TypeScript/Vitest: `@/` -> `apps/web/src`
+
+## Docs
+
+- Analyse: `apps/web/docs/analysis.md`
+- Restructure: `apps/web/docs/restructure.md`
+- Deploiement: `DOKPLOY.md`
+
 ## Notes
 
 - Les PDF sont generes via Playwright. En cas d'erreur, installer les navigateurs :

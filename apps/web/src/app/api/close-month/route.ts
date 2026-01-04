@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { closeMonth } from "../../../../server/api/closures";
+import { closeMonth } from "@/server/api/closures";
 import { ensureProjectAccess, requireUser } from "@/server/authz";
 import { jsonError } from "@/server/http";
 

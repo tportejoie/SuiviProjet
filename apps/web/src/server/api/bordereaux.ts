@@ -1,5 +1,5 @@
 import { BordereauStatus, BordereauType, SnapshotType } from "@prisma/client";
-import { prisma } from "../prisma";
+import { prisma } from "@/server/prisma";
 import { createSnapshot } from "../services/snapshots";
 import { writeAuditLog } from "../services/audit";
 
@@ -27,19 +27,41 @@ export const generateBordereau = async (input: {
     include: { versions: true }
   });
 
+  const isRectificatif = Boolean(existing && existing.status === BordereauStatus.SIGNED);
+  const signedSnapshot = isRectificatif
+    ? await prisma.projectSituationSnapshot.findFirst({
+        where: {
+          projectId: input.projectId,
+          type: SnapshotType.BORDEREAU_SIGNED,
+          year: input.periodYear,
+          month: input.periodMonth
+        },
+        orderBy: { computedAt: "desc" }
+      })
+    : null;
+
+  const snapshotData: Record<string, unknown> = {
+    projectId: input.projectId,
+    periodYear: input.periodYear,
+    periodMonth: input.periodMonth,
+    type: input.type,
+    file: input.file,
+  };
+  if (isRectificatif) {
+    snapshotData.reason = "RECTIFICATIF_BORDEREAU";
+    if (signedSnapshot?.id) {
+      snapshotData.signedSnapshotId = signedSnapshot.id;
+    }
+  }
+
   const snapshot = await createSnapshot({
     projectId: input.projectId,
-    type: SnapshotType.BORDEREAU_GENERATED,
+    type: isRectificatif ? SnapshotType.RECTIFICATIF : SnapshotType.BORDEREAU_GENERATED,
     year: input.periodYear,
     month: input.periodMonth,
     computedBy: input.actorName,
-    data: {
-      projectId: input.projectId,
-      periodYear: input.periodYear,
-      periodMonth: input.periodMonth,
-      type: input.type,
-      file: input.file,
-    },
+    supersedesSnapshotId: signedSnapshot?.id,
+    data: snapshotData,
   });
 
   const file = await prisma.fileObject.create({

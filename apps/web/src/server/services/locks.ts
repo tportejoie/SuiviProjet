@@ -1,4 +1,4 @@
-import { prisma } from "../prisma";
+import { prisma } from "@/server/prisma";
 import { writeAuditLog } from "./audit";
 
 export const assertNotLocked = async (

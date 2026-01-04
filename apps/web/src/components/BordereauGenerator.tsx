@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { BordereauComment, Project, Client, Contact, ProjectType, TimeEntry, Deliverable } from '../types';
+import { BordereauComment, Project, Client, Contact, ProjectType, TimeEntry, Deliverable } from '@/types';
 import { Download, Printer, Send } from 'lucide-react';
-import { generateBordereau, getBordereauComments, getTimeEntries, upsertBordereauComment } from '../lib/api';
+import { generateBordereau, getBordereauComments, getTimeEntries, upsertBordereauComment } from '@/lib/api';
 import { getMonthName } from '../utils';
 import BordereauDocument from './BordereauDocument';
 
