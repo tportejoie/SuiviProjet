@@ -40,7 +40,7 @@ export const generateBordereau = async (input: {
       })
     : null;
 
-  const snapshotData: Record<string, unknown> = {
+  const snapshotData: Prisma.InputJsonValue = {
     projectId: input.projectId,
     periodYear: input.periodYear,
     periodMonth: input.periodMonth,
