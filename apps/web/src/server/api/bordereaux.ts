@@ -46,13 +46,13 @@ export const generateBordereau = async (input: {
     periodMonth: input.periodMonth,
     type: input.type,
     file: input.file,
+    ...(isRectificatif
+      ? {
+          reason: "RECTIFICATIF_BORDEREAU",
+          signedSnapshotId: signedSnapshot?.id ?? null
+        }
+      : {})
   };
-  if (isRectificatif) {
-    snapshotData.reason = "RECTIFICATIF_BORDEREAU";
-    if (signedSnapshot?.id) {
-      snapshotData.signedSnapshotId = signedSnapshot.id;
-    }
-  }
 
   const snapshot = await createSnapshot({
     projectId: input.projectId,
