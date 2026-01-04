@@ -1,4 +1,4 @@
-import { BordereauStatus, BordereauType, SnapshotType } from "@prisma/client";
+import { BordereauStatus, BordereauType, SnapshotType, Prisma } from "@prisma/client";
 import { prisma } from "@/server/prisma";
 import { createSnapshot } from "../services/snapshots";
 import { writeAuditLog } from "../services/audit";
