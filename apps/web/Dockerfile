@@ -24,6 +24,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 COPY --from=builder /app/scripts/docker-entrypoint.sh ./scripts/docker-entrypoint.sh
+RUN chmod +x ./scripts/docker-entrypoint.sh
 
 EXPOSE 3000
-CMD ["./scripts/docker-entrypoint.sh"]
+CMD ["sh", "./scripts/docker-entrypoint.sh"]
