@@ -35,7 +35,8 @@ export async function POST(request: Request) {
     const periodYear = payload.periodYear ?? new Date().getFullYear();
     const periodMonth = payload.periodMonth ?? new Date().getMonth();
 
-    const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
+    const requestOrigin = new URL(request.url).origin;
+    const baseUrl = process.env.APP_BASE_URL || requestOrigin;
     const printPath = `/bordereaux/print?projectId=${encodeURIComponent(payload.projectId)}&year=${periodYear}&month=${periodMonth}`;
     const primaryUrl = `${baseUrl}${printPath}`;
     let pdfBuffer: Buffer;
