@@ -3,7 +3,10 @@ import { chromium } from "playwright";
 export const renderHtmlToPdf = async (html: string) => {
   let browser;
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle" });
     const pdf = await page.pdf({
@@ -28,7 +31,10 @@ export const renderHtmlToPdf = async (html: string) => {
 export const renderUrlToPdf = async (url: string) => {
   let browser;
   try {
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle" });
     await page.emulateMedia({ media: "print" });

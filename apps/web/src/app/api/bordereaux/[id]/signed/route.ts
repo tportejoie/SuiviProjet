@@ -36,8 +36,19 @@ export async function POST(request: Request) {
     const periodMonth = payload.periodMonth ?? new Date().getMonth();
 
     const baseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
-    const printUrl = `${baseUrl}/bordereaux/print?projectId=${encodeURIComponent(payload.projectId)}&year=${periodYear}&month=${periodMonth}`;
-    const pdfBuffer = await renderUrlToPdf(printUrl);
+    const printPath = `/bordereaux/print?projectId=${encodeURIComponent(payload.projectId)}&year=${periodYear}&month=${periodMonth}`;
+    const primaryUrl = `${baseUrl}${printPath}`;
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await renderUrlToPdf(primaryUrl);
+    } catch (error) {
+      const fallbackBaseUrl = "http://localhost:3000";
+      if (baseUrl === fallbackBaseUrl) {
+        throw error;
+      }
+      const fallbackUrl = `${fallbackBaseUrl}${printPath}`;
+      pdfBuffer = await renderUrlToPdf(fallbackUrl);
+    }
     const stored = await writeFileToStorage(pdfBuffer, `${project.projectNumber}-${periodYear}-${periodMonth}.pdf`, "application/pdf");
 
     const result = await generateBordereau({
