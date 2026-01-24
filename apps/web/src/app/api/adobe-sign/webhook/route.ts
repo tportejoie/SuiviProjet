@@ -45,7 +45,22 @@ const mapStatus = (eventType: string | null) => {
   }
 };
 
+const getClientId = (request: Request) => {
+  const url = new URL(request.url);
+  const headerId = request.headers.get("x-adobesign-clientid");
+  const queryId = url.searchParams.get("client_id") || url.searchParams.get("clientId");
+  return headerId || queryId || null;
+};
+
 export async function POST(request: Request) {
+  const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
+  if (expectedClientId) {
+    const providedClientId = getClientId(request);
+    if (providedClientId && providedClientId !== expectedClientId) {
+      return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
+    }
+  }
+
   let payload: any = null;
   try {
     payload = await request.json();
@@ -87,6 +102,13 @@ export async function POST(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
+  if (expectedClientId) {
+    const providedClientId = getClientId(request);
+    if (providedClientId && providedClientId !== expectedClientId) {
+      return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
+    }
+  }
   return NextResponse.json({ ok: true });
 }
