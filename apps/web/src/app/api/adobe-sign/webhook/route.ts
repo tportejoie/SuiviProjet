@@ -22,6 +22,21 @@ const extractEventType = (event: any) => {
     event?.eventType ||
     event?.event_type ||
     event?.eventName ||
+    event?.event?.type ||
+    event?.event?.eventType ||
+    event?.agreementEvent?.type ||
+    event?.agreementEvent?.eventType ||
+    null
+  );
+};
+
+const extractAgreementStatus = (payload: any, event: any) => {
+  return (
+    event?.agreementStatus ||
+    event?.agreement?.status ||
+    payload?.agreementStatus ||
+    payload?.agreement?.status ||
+    payload?.agreement?.agreementStatus ||
     null
   );
 };
@@ -42,6 +57,27 @@ const mapStatus = (eventType: string | null) => {
       return "DECLINED";
     case "AGREEMENT_EXPIRED":
       return "EXPIRED";
+    default:
+      return null;
+  }
+};
+
+const mapAgreementStatus = (status: string | null) => {
+  if (!status) return null;
+  switch (status.toUpperCase()) {
+    case "SIGNED":
+    case "APPROVED":
+    case "COMPLETED":
+      return "SIGNED";
+    case "CANCELLED":
+      return "CANCELLED";
+    case "DECLINED":
+      return "DECLINED";
+    case "EXPIRED":
+      return "EXPIRED";
+    case "OUT_FOR_SIGNATURE":
+    case "OUT_FOR_APPROVAL":
+      return "SENT";
     default:
       return null;
   }
@@ -102,19 +138,29 @@ export async function POST(request: Request) {
     events.length > 0
       ? events.map((event: any) => ({
           eventType: extractEventType(event),
-          agreementId: extractAgreementId(event) || baseAgreementId
+          agreementId: extractAgreementId(event) || baseAgreementId,
+          agreementStatus: extractAgreementStatus(payload, event),
+          rawEvent: event
         }))
-      : [{ eventType: extractEventType(payload), agreementId: baseAgreementId }];
+      : [
+          {
+            eventType: extractEventType(payload),
+            agreementId: baseAgreementId,
+            agreementStatus: extractAgreementStatus(payload, payload),
+            rawEvent: payload?.event || payload
+          }
+        ];
 
   for (const event of normalizedEvents) {
     if (!event.agreementId) continue;
-    const status = mapStatus(event.eventType);
+    const status = mapStatus(event.eventType) ?? mapAgreementStatus(event.agreementStatus);
     if (!status) continue;
 
     console.info("Adobe Sign webhook event", {
       agreementId: event.agreementId,
       eventType: event.eventType,
-      status
+      status,
+      agreementStatus: event.agreementStatus
     });
 
     const agreement = await prisma.adobeAgreement.findFirst({
