@@ -150,6 +150,8 @@ model CompanySettings {
   email       String?
   website     String?
   logoFileId  String?
+  logoData    Bytes?
+  logoContentType String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   logoFile    FileObject? @relation(fields: [logoFileId], references: [id])
