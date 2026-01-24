@@ -1,6 +1,11 @@
 import { ProjectType } from "@/types";
 
 const DEFAULT_BASE_URI = "https://api.echosign.com";
+const FALLBACK_BASE_URIS = [
+  "https://api.adobesign.com",
+  "https://api.eu1.echosign.com",
+  "https://api.na1.echosign.com"
+];
 
 type AccessPointResponse = {
   api_access_point: string;
@@ -22,14 +27,8 @@ const getAuthHeaders = (token: string) => ({
   Authorization: `Bearer ${token}`
 });
 
-const getApiAccessPoint = async (token: string) => {
-  if (process.env.ADOBE_SIGN_BASE_URI) {
-    return process.env.ADOBE_SIGN_BASE_URI.replace(/\/$/, "");
-  }
-  if (cachedApiBaseUri) {
-    return cachedApiBaseUri;
-  }
-  const response = await fetch(`${DEFAULT_BASE_URI}/api/rest/v6/base_uris`, {
+const fetchBaseUri = async (token: string, host: string) => {
+  const response = await fetch(`${host}/api/rest/v6/base_uris`, {
     headers: getAuthHeaders(token)
   });
   if (!response.ok) {
@@ -37,8 +36,30 @@ const getApiAccessPoint = async (token: string) => {
     throw new Error(`Adobe Sign base_uris failed: ${response.status} ${text}`);
   }
   const data = (await response.json()) as AccessPointResponse;
-  cachedApiBaseUri = data.api_access_point.replace(/\/$/, "");
-  return cachedApiBaseUri;
+  return data.api_access_point.replace(/\/$/, "");
+};
+
+const getApiAccessPoint = async (token: string) => {
+  if (process.env.ADOBE_SIGN_BASE_URI) {
+    return process.env.ADOBE_SIGN_BASE_URI.replace(/\/$/, "");
+  }
+  if (cachedApiBaseUri) {
+    return cachedApiBaseUri;
+  }
+  const hosts = [DEFAULT_BASE_URI, ...FALLBACK_BASE_URIS];
+  let lastError: Error | null = null;
+  for (const host of hosts) {
+    try {
+      cachedApiBaseUri = await fetchBaseUri(token, host);
+      return cachedApiBaseUri;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+  if (lastError) {
+    throw lastError;
+  }
+  throw new Error("Adobe Sign base_uris failed: no hosts available");
 };
 
 const callAdobe = async (token: string, path: string, init: RequestInit) => {
