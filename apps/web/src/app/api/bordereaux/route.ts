@@ -30,6 +30,9 @@ export async function GET(request: Request) {
   const bordereaux = await prisma.bordereau.findMany({
     where: { projectId },
     include: {
+      agreement: {
+        select: { id: true, providerId: true, status: true, auditFileId: true }
+      },
       versions: {
         include: { file: true },
         orderBy: { versionNumber: "desc" }

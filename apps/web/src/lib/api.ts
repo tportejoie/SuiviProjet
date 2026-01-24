@@ -148,6 +148,11 @@ export const getSnapshots = (projectId?: string) => {
 export const getBordereaux = (projectId: string) =>
   fetchJson<any[]>(`/api/bordereaux?projectId=${projectId}`);
 
+export const remindBordereau = (bordereauId: string) =>
+  fetchJson(`/api/bordereaux/${bordereauId}/remind`, {
+    method: "POST"
+  });
+
 export const getDeliverables = (projectId: string) =>
   fetchJson<Deliverable[]>(`/api/deliverables?projectId=${projectId}`);
 

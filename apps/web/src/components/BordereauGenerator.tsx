@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { BordereauComment, Project, Client, Contact, ProjectType, TimeEntry, Deliverable } from '@/types';
-import { Download, Printer, Send } from 'lucide-react';
-import { generateBordereau, getBordereauComments, getTimeEntries, upsertBordereauComment } from '@/lib/api';
+import { Download, Printer, Send, RefreshCw } from 'lucide-react';
+import { generateBordereau, getBordereauComments, getBordereaux, getTimeEntries, remindBordereau, upsertBordereauComment } from '@/lib/api';
 import { getMonthName } from '../utils';
 import BordereauDocument from './BordereauDocument';
 
@@ -26,8 +26,10 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [comments, setComments] = useState<BordereauComment[]>([]);
+  const [bordereaux, setBordereaux] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isReminding, setIsReminding] = useState(false);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,20 +37,23 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
     const load = async () => {
       setIsLoading(true);
       try {
-        const [entries, commentData] = await Promise.all([
+        const [entries, commentData, bordereauData] = await Promise.all([
           getTimeEntries(project.id, selectedYear, selectedMonth),
           project.type === ProjectType.AT
             ? getBordereauComments(project.id, selectedYear, selectedMonth)
-            : Promise.resolve([])
+            : Promise.resolve([]),
+          getBordereaux(project.id)
         ]);
         if (isMounted) {
           setTimeEntries(entries);
           setComments(commentData as BordereauComment[]);
+          setBordereaux(bordereauData);
         }
       } catch {
         if (isMounted) {
           setTimeEntries([]);
           setComments([]);
+          setBordereaux([]);
         }
       } finally {
         if (isMounted) {
@@ -127,6 +132,35 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
     }
   };
 
+  const currentBordereau = useMemo(() => {
+    return bordereaux.find(bordereau =>
+      bordereau.periodYear === selectedYear &&
+      bordereau.periodMonth === selectedMonth &&
+      (project.type === ProjectType.AT ? bordereau.type === 'BA' : bordereau.type === 'BL')
+    );
+  }, [bordereaux, project.type, selectedMonth, selectedYear]);
+
+  const canRemind =
+    currentBordereau?.agreement?.status === 'SENT' &&
+    currentBordereau?.status !== 'SIGNED';
+
+  const handleRemind = async () => {
+    if (!currentBordereau) {
+      setGeneratedMessage('Aucun bordereau a relancer pour cette periode.');
+      return;
+    }
+    setIsReminding(true);
+    setGeneratedMessage(null);
+    try {
+      await remindBordereau(currentBordereau.id);
+      setGeneratedMessage('Relance envoyee au signataire.');
+    } catch {
+      setGeneratedMessage('Erreur lors de la relance Adobe Sign.');
+    } finally {
+      setIsReminding(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 flex items-center justify-between no-print">
@@ -179,6 +213,16 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
             <Send size={18} />
             <span>{isGenerating ? 'Generation...' : 'Generer PDF'}</span>
           </button>
+          {process.env.NEXT_PUBLIC_ADOBE_SIGN_ENABLED === 'true' && (
+            <button
+              onClick={handleRemind}
+              disabled={!canRemind || isReminding}
+              className="flex items-center space-x-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-300 transition-all shadow-lg disabled:opacity-60"
+            >
+              <RefreshCw size={18} />
+              <span>{isReminding ? 'Relance...' : 'Relancer signature'}</span>
+            </button>
+          )}
           </div>
         </div>
       </div>

@@ -23,14 +23,19 @@ export async function GET(
   const fileId = context.params.id;
   const file = await prisma.fileObject.findUnique({
     where: { id: fileId },
-    include: { versions: { include: { bordereau: true } } }
+    include: {
+      versions: { include: { bordereau: true } },
+      adobeAgreementAudits: { include: { bordereau: true } }
+    }
   });
 
   if (!file) {
     return jsonError("File not found", 404);
   }
 
-  const projectId = file.versions[0]?.bordereau?.projectId;
+  const projectId =
+    file.versions[0]?.bordereau?.projectId ||
+    file.adobeAgreementAudits[0]?.bordereau?.projectId;
   if (!projectId) {
     return jsonError("File not linked to a project", 404);
   }

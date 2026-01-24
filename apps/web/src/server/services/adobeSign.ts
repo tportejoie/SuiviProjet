@@ -121,6 +121,71 @@ export const downloadAgreementPdf = async (token: string, agreementId: string) =
   return Buffer.from(arrayBuffer);
 };
 
+export const downloadAgreementAuditTrail = async (token: string, agreementId: string) => {
+  const response = await callAdobe(token, `/api/rest/v6/agreements/${agreementId}/auditTrail`, {
+    method: "GET",
+    headers: {
+      ...getAuthHeaders(token),
+      Accept: "application/pdf"
+    }
+  });
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+};
+
+export const getAgreementMemberIds = async (token: string, agreementId: string) => {
+  const response = await callAdobe(token, `/api/rest/v6/agreements/${agreementId}/members`, {
+    method: "GET",
+    headers: {
+      ...getAuthHeaders(token),
+      "Content-Type": "application/json"
+    }
+  });
+  const data = await response.json();
+  const ids = new Set<string>();
+  const memberInfos = data?.agreementMemberInfos || data?.participantSetInfos || data?.participantSets;
+  if (Array.isArray(memberInfos)) {
+    for (const item of memberInfos) {
+      const candidates =
+        item?.memberInfos || item?.participantSetMemberInfos || item?.members || item?.participantSetInfos;
+      if (Array.isArray(candidates)) {
+        for (const member of candidates) {
+          const id = member?.id || member?.memberId || member?.participantId;
+          if (id) ids.add(id);
+        }
+      } else {
+        const id = item?.id || item?.memberId || item?.participantId;
+        if (id) ids.add(id);
+      }
+    }
+  }
+  if (ids.size === 0 && Array.isArray(data?.agreementMemberInfoList)) {
+    data.agreementMemberInfoList.forEach((member: any) => {
+      const id = member?.id || member?.memberId || member?.participantId;
+      if (id) ids.add(id);
+    });
+  }
+  return Array.from(ids);
+};
+
+export const sendAgreementReminder = async (token: string, agreementId: string, participantIds: string[]) => {
+  const response = await callAdobe(token, `/api/rest/v6/agreements/${agreementId}/reminders`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeaders(token),
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      recipientParticipantIds: participantIds,
+      status: "ACTIVE"
+    })
+  });
+  if (response.status === 204) {
+    return { ok: true };
+  }
+  return response.json();
+};
+
 export const buildAgreementMessage = (input: {
   type: ProjectType;
   projectNumber: string;

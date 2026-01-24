@@ -29,12 +29,16 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
   }, [projectId]);
 
   const snapshotFiles = useMemo(() => {
-    const map = new Map<string, { fileId: string; fileName: string }>();
+    const map = new Map<string, { fileId: string; fileName: string; auditFileId?: string | null }>();
     bordereaux.forEach((bordereau: any) => {
       (bordereau.versions || []).forEach((version: any) => {
         if (version.snapshotId && version.file?.id) {
           if (!map.has(version.snapshotId)) {
-            map.set(version.snapshotId, { fileId: version.file.id, fileName: version.file.fileName });
+            map.set(version.snapshotId, {
+              fileId: version.file.id,
+              fileName: version.file.fileName,
+              auditFileId: bordereau.agreement?.auditFileId ?? null
+            });
           }
         }
       });
@@ -98,7 +102,14 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm group-hover:border-slate-300 transition-colors">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h6 className="font-bold text-slate-900">{getLabel(snap.type)}</h6>
+                    <div className="flex items-center gap-2">
+                      <h6 className="font-bold text-slate-900">{getLabel(snap.type)}</h6>
+                      {snap.type === SnapshotType.BORDEREAU_SIGNED && (
+                        <span className="text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                          PDF signe
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500">{new Date(snap.computedAt).toLocaleString('fr-FR')}</p>
                   </div>
                   {snap.month !== undefined && snap.year !== undefined && (
@@ -141,6 +152,14 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
                         >
                           Telecharger
                         </a>
+                        {snap.type === SnapshotType.BORDEREAU_SIGNED && file.auditFileId && (
+                          <a
+                            href={`/api/files/${file.auditFileId}?download=1`}
+                            className="text-xs font-bold text-slate-500 hover:text-slate-700"
+                          >
+                            Audit
+                          </a>
+                        )}
                       </div>
                     );
                   })()}

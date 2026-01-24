@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { markBordereauSigned } from "@/server/api/bordereaux";
 import { writeFileToStorage } from "@/server/services/storage";
-import { downloadAgreementPdf } from "@/server/services/adobeSign";
+import { downloadAgreementAuditTrail, downloadAgreementPdf } from "@/server/services/adobeSign";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -182,6 +182,7 @@ export async function POST(request: Request) {
     if (status === "SIGNED") {
       if (alreadySigned) continue;
       let signedFile: { storageKey: string; fileName: string; contentType: string; size: number; checksum?: string } | undefined;
+      let auditFileId: string | undefined;
       const apiKey = process.env.ADOBE_SIGN_API_KEY;
       if (apiKey) {
         try {
@@ -195,6 +196,29 @@ export async function POST(request: Request) {
           const message = error instanceof Error ? error.message : String(error);
           console.warn("Adobe Sign download signed PDF failed:", message);
         }
+        try {
+          if (!agreement.auditFileId) {
+            const auditBuffer = await downloadAgreementAuditTrail(apiKey, event.agreementId);
+            const storedAudit = await writeFileToStorage(
+              auditBuffer,
+              `audit-trail-${event.agreementId}.pdf`,
+              "application/pdf"
+            );
+            const auditFile = await prisma.fileObject.create({
+              data: {
+                storageKey: storedAudit.storageKey,
+                fileName: storedAudit.fileName,
+                contentType: storedAudit.contentType,
+                size: storedAudit.size,
+                checksum: storedAudit.checksum
+              }
+            });
+            auditFileId = auditFile.id;
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          console.warn("Adobe Sign download audit trail failed:", message);
+        }
       }
 
       await markBordereauSigned({
@@ -203,6 +227,13 @@ export async function POST(request: Request) {
         sourceRef: event.agreementId,
         signedFile
       });
+
+      if (auditFileId) {
+        await prisma.adobeAgreement.update({
+          where: { id: agreement.id },
+          data: { auditFileId }
+        });
+      }
     }
   }
 
