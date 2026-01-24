@@ -122,7 +122,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
         type: project.type === ProjectType.AT ? 'BA' : 'BL',
         periodYear: selectedYear,
         periodMonth: selectedMonth,
-        actorName: 'Thomas Wagner'
+        actorName: project.projectManager
       });
       setGeneratedMessage('Bordereau genere et versionne.');
     } catch (error) {

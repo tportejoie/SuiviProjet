@@ -63,6 +63,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
   const handleHourChange = async (day: number, type: 'BO' | 'SITE', value: string) => {
     if (isLocked || !selectedProjectId) return;
     const hours = Math.min(8, Math.max(0, parseFloat(value) || 0));
+    const actorName = currentProject?.projectManager || currentUser.name || currentUser.email;
 
     try {
       const entry = await upsertTimeEntry({
@@ -72,7 +73,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
         day,
         type,
         hours,
-        actorName: 'Thomas Wagner'
+        actorName
       });
       setTimeEntries(prev => {
         const filtered = prev.filter(
@@ -98,7 +99,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
         projectId: currentProject.id,
         year: selectedYear,
         month: selectedMonth,
-        actorName: 'Thomas Wagner'
+        actorName: currentProject.projectManager || currentUser.name || currentUser.email
       });
       const lockData = await getPeriodLock(currentProject.id, selectedYear, selectedMonth);
       setLock(lockData);
