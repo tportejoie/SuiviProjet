@@ -79,6 +79,29 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({
     loadData();
   }, [project.id, activeTab]);
 
+  useEffect(() => {
+    if (activeTab !== 'timeline') {
+      return;
+    }
+    let cancelled = false;
+    const refreshSnapshots = async () => {
+      try {
+        const data = await getSnapshots(project.id);
+        if (!cancelled) {
+          setSnapshots(data);
+        }
+      } catch {
+        // keep last known snapshots
+      }
+    };
+    refreshSnapshots();
+    const interval = setInterval(refreshSnapshots, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [project.id, activeTab]);
+
   const handleUpdateDeliverableStatus = async (id: string, status: DeliverableStatus) => {
     const updated = await updateDeliverableStatus(id, status);
     setDeliverables(prev => prev.map(d => (d.id === id ? updated : d)));
