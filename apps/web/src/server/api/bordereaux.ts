@@ -125,10 +125,18 @@ export const markBordereauSigned = async (input: {
   bordereauId: string;
   actorName: string;
   sourceRef: string;
+  signedFile?: {
+    storageKey: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+    checksum?: string;
+  };
 }) => {
   const bordereau = await prisma.bordereau.update({
     where: { id: input.bordereauId },
     data: { status: BordereauStatus.SIGNED },
+    include: { versions: true }
   });
 
   const snapshot = await createSnapshot({
@@ -143,6 +151,41 @@ export const markBordereauSigned = async (input: {
       status: "SIGNED",
     },
   });
+
+  if (input.signedFile) {
+    const file = await prisma.fileObject.create({
+      data: {
+        storageKey: input.signedFile.storageKey,
+        fileName: input.signedFile.fileName,
+        contentType: input.signedFile.contentType,
+        size: input.signedFile.size,
+        checksum: input.signedFile.checksum,
+      },
+    });
+
+    const version = await prisma.bordereauVersion.create({
+      data: {
+        bordereauId: bordereau.id,
+        versionNumber: bordereau.versions.length + 1,
+        fileId: file.id,
+        generatedBy: input.actorName,
+        snapshotId: snapshot.id,
+      },
+    });
+
+    await writeAuditLog({
+      entityType: "Bordereau",
+      entityId: bordereau.id,
+      action: "SIGNED_FILE",
+      diffJson: {
+        snapshotId: snapshot.id,
+        fileId: file.id,
+        versionId: version.id,
+        sourceRef: input.sourceRef,
+      },
+      actorName: input.actorName,
+    });
+  }
 
   await writeAuditLog({
     entityType: "Bordereau",

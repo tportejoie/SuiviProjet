@@ -109,6 +109,18 @@ export const createAgreement = async (token: string, payload: any) => {
   return (await response.json()) as AgreementResponse;
 };
 
+export const downloadAgreementPdf = async (token: string, agreementId: string) => {
+  const response = await callAdobe(token, `/api/rest/v6/agreements/${agreementId}/combinedDocument`, {
+    method: "GET",
+    headers: {
+      ...getAuthHeaders(token),
+      Accept: "application/pdf"
+    }
+  });
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+};
+
 export const buildAgreementMessage = (input: {
   type: ProjectType;
   projectNumber: string;

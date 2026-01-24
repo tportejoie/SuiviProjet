@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { markBordereauSigned } from "@/server/api/bordereaux";
+import { writeFileToStorage } from "@/server/services/storage";
+import { downloadAgreementPdf } from "@/server/services/adobeSign";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -169,6 +171,7 @@ export async function POST(request: Request) {
 
     if (!agreement) continue;
 
+    const alreadySigned = agreement.status === "SIGNED";
     if (agreement.status !== status) {
       await prisma.adobeAgreement.update({
         where: { id: agreement.id },
@@ -177,10 +180,28 @@ export async function POST(request: Request) {
     }
 
     if (status === "SIGNED") {
+      if (alreadySigned) continue;
+      let signedFile: { storageKey: string; fileName: string; contentType: string; size: number; checksum?: string } | undefined;
+      const apiKey = process.env.ADOBE_SIGN_API_KEY;
+      if (apiKey) {
+        try {
+          const pdfBuffer = await downloadAgreementPdf(apiKey, event.agreementId);
+          signedFile = await writeFileToStorage(
+            pdfBuffer,
+            `bordereau-signed-${event.agreementId}.pdf`,
+            "application/pdf"
+          );
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          console.warn("Adobe Sign download signed PDF failed:", message);
+        }
+      }
+
       await markBordereauSigned({
         bordereauId: agreement.bordereauId,
         actorName: "Adobe Sign",
-        sourceRef: event.agreementId
+        sourceRef: event.agreementId,
+        signedFile
       });
     }
   }
