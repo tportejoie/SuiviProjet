@@ -16,12 +16,12 @@ const extractAgreementId = (payload: any) => {
   );
 };
 
-const extractEventType = (payload: any) => {
+const extractEventType = (event: any) => {
   return (
-    payload?.event?.type ||
-    payload?.event?.eventType ||
-    payload?.eventType ||
-    payload?.event_type ||
+    event?.type ||
+    event?.eventType ||
+    event?.event_type ||
+    event?.eventName ||
     null
   );
 };
@@ -33,6 +33,7 @@ const mapStatus = (eventType: string | null) => {
       return "SENT";
     case "AGREEMENT_ACTION_COMPLETED":
     case "AGREEMENT_SIGNED":
+    case "AGREEMENT_COMPLETED":
       return "SIGNED";
     case "AGREEMENT_CANCELLED":
       return "CANCELLED";
@@ -43,6 +44,15 @@ const mapStatus = (eventType: string | null) => {
     default:
       return null;
   }
+};
+
+const extractEvents = (payload: any) => {
+  if (!payload) return [];
+  if (Array.isArray(payload?.events)) return payload.events;
+  if (Array.isArray(payload?.eventList)) return payload.eventList;
+  if (Array.isArray(payload?.event_list)) return payload.event_list;
+  if (payload?.event) return [payload.event];
+  return [];
 };
 
 const getClientId = (request: Request) => {
@@ -73,35 +83,45 @@ export async function POST(request: Request) {
     return respondWithClientId(responseClientId);
   }
 
-  const agreementId = extractAgreementId(payload);
-  if (!agreementId) {
+  const events = extractEvents(payload);
+  const baseAgreementId = extractAgreementId(payload);
+  if (!events.length && !baseAgreementId) {
     return respondWithClientId(responseClientId);
   }
 
-  const eventType = extractEventType(payload);
-  const status = mapStatus(eventType);
+  const normalizedEvents =
+    events.length > 0
+      ? events.map((event: any) => ({
+          eventType: extractEventType(event),
+          agreementId: extractAgreementId(event) || baseAgreementId
+        }))
+      : [{ eventType: extractEventType(payload), agreementId: baseAgreementId }];
 
-  const agreement = await prisma.adobeAgreement.findFirst({
-    where: { providerId: agreementId }
-  });
+  for (const event of normalizedEvents) {
+    if (!event.agreementId) continue;
+    const status = mapStatus(event.eventType);
+    if (!status) continue;
 
-  if (!agreement) {
-    return respondWithClientId(responseClientId);
-  }
-
-  if (status && agreement.status !== status) {
-    await prisma.adobeAgreement.update({
-      where: { id: agreement.id },
-      data: { status }
+    const agreement = await prisma.adobeAgreement.findFirst({
+      where: { providerId: event.agreementId }
     });
-  }
 
-  if (status === "SIGNED") {
-    await markBordereauSigned({
-      bordereauId: agreement.bordereauId,
-      actorName: "Adobe Sign",
-      sourceRef: agreementId
-    });
+    if (!agreement) continue;
+
+    if (agreement.status !== status) {
+      await prisma.adobeAgreement.update({
+        where: { id: agreement.id },
+        data: { status }
+      });
+    }
+
+    if (status === "SIGNED") {
+      await markBordereauSigned({
+        bordereauId: agreement.bordereauId,
+        actorName: "Adobe Sign",
+        sourceRef: event.agreementId
+      });
+    }
   }
 
   return respondWithClientId(responseClientId);
