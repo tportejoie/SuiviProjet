@@ -7,6 +7,7 @@ import { requireUser } from "@/server/authz";
 import { jsonError, jsonErrorWithDetail } from "@/server/http";
 import { buildAgreementMessage, createAgreement, createTransientDocument } from "@/server/services/adobeSign";
 import { getMonthName } from "@/utils";
+import { ProjectType } from "@/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
