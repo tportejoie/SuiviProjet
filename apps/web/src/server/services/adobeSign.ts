@@ -65,7 +65,8 @@ const callAdobe = async (token: string, path: string, init: RequestInit) => {
 
 export const createTransientDocument = async (token: string, fileName: string, buffer: Buffer) => {
   const formData = new FormData();
-  formData.append("File", new Blob([buffer]), fileName);
+  const bytes = new Uint8Array(buffer);
+  formData.append("File", new Blob([bytes]), fileName);
 
   const response = await callAdobe(token, "/api/rest/v6/transientDocuments", {
     method: "POST",
