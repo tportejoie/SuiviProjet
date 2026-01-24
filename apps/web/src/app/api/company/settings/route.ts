@@ -33,6 +33,7 @@ export async function GET() {
     logoFileId: null
   };
 
+  const logoUrl = data.logoFileId ? `/api/company/logo?v=${data.logoFileId}` : null;
   return NextResponse.json({
     id: data.id,
     name: data.name,
@@ -46,7 +47,7 @@ export async function GET() {
     phone: data.phone,
     email: data.email,
     website: data.website,
-    logoUrl: data.logoFileId ? "/api/company/logo" : null
+    logoUrl
   });
 }
 
@@ -92,6 +93,7 @@ export async function PUT(request: Request) {
     }
   });
 
+  const logoUrl = updated.logoFileId ? `/api/company/logo?v=${updated.logoFileId}` : null;
   return NextResponse.json({
     id: updated.id,
     name: updated.name,
@@ -105,7 +107,7 @@ export async function PUT(request: Request) {
     phone: updated.phone,
     email: updated.email,
     website: updated.website,
-    logoUrl: updated.logoFileId ? "/api/company/logo" : null
+    logoUrl
   });
 }
 

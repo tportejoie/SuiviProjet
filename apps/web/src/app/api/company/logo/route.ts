@@ -76,6 +76,6 @@ export async function POST(request: Request) {
     update: { logoFileId: storedFile.id }
   });
 
-  return NextResponse.json({ ok: true, logoUrl: "/api/company/logo" });
+  return NextResponse.json({ ok: true, logoUrl: `/api/company/logo?v=${storedFile.id}` });
 }
 
