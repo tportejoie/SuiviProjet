@@ -33,3 +33,9 @@ export const writeFileToStorage = async (buffer: Buffer, fileName: string, conte
     checksum
   } satisfies StoredFile;
 };
+
+export const readFileFromStorage = async (storageKey: string) => {
+  const basePath = process.env.FILE_STORAGE_PATH || "./storage";
+  const fullPath = path.join(basePath, storageKey);
+  return fs.readFile(fullPath);
+};

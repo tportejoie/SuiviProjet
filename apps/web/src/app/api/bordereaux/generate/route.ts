@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { renderUrlToPdf } from "@/server/services/pdf";
-import { writeFileToStorage } from "@/server/services/storage";
+import { readFileFromStorage, writeFileToStorage } from "@/server/services/storage";
 import { generateBordereau } from "@/server/api/bordereaux";
 import { requireUser } from "@/server/authz";
 import { jsonError, jsonErrorWithDetail } from "@/server/http";
+import { buildAgreementMessage, createAgreement, createTransientDocument } from "@/server/services/adobeSign";
+import { getMonthName } from "@/utils";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -60,6 +62,52 @@ export async function POST(request: Request) {
       actorName: payload.actorName || user.name || user.email,
       file: stored
     });
+
+    if (process.env.ADOBE_SIGN_ENABLED === "true") {
+      const apiKey = process.env.ADOBE_SIGN_API_KEY;
+      if (!apiKey) {
+        return jsonErrorWithDetail("Adobe Sign misconfigured", "Missing ADOBE_SIGN_API_KEY", 500);
+      }
+      if (!project.contact?.email) {
+        return jsonErrorWithDetail("Adobe Sign misconfigured", "Missing signataire email", 500);
+      }
+      const pdfFile = await readFileFromStorage(stored.storageKey);
+      const transient = await createTransientDocument(apiKey, stored.fileName, pdfFile);
+      const periodLabel = `${getMonthName(periodMonth)} ${periodYear}`;
+      const message = buildAgreementMessage({
+        type: project.type,
+        projectNumber: project.projectNumber,
+        designation: project.designation,
+        periodLabel
+      });
+      const agreement = await createAgreement(apiKey, {
+        name: message.subject,
+        message: message.message,
+        fileInfos: [{ transientDocumentId: transient.transientDocumentId }],
+        participantSetsInfo: [
+          {
+            memberInfos: [{ email: project.contact.email }],
+            order: 1,
+            role: "SIGNER"
+          }
+        ],
+        signatureType: "ESIGN",
+        state: "IN_PROCESS"
+      });
+
+      await prisma.adobeAgreement.upsert({
+        where: { bordereauId: result.bordereau.id },
+        create: {
+          bordereauId: result.bordereau.id,
+          providerId: agreement.id,
+          status: agreement.status || "SENT"
+        },
+        update: {
+          providerId: agreement.id,
+          status: agreement.status || "SENT"
+        }
+      });
+    }
 
     return NextResponse.json(result);
   } catch (error) {
