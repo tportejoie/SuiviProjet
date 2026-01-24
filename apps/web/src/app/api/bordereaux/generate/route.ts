@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       const transient = await createTransientDocument(apiKey, stored.fileName, pdfFile);
       const periodLabel = `${getMonthName(periodMonth)} ${periodYear}`;
       const message = buildAgreementMessage({
-        type: project.type,
+        type: project.type as ProjectType,
         projectNumber: project.projectNumber,
         designation: project.designation,
         periodLabel
