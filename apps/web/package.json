@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\" && next dev",
+    "postinstall": "npx playwright install --with-deps chromium",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
