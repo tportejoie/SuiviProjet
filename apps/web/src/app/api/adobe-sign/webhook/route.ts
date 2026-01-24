@@ -52,10 +52,19 @@ const getClientId = (request: Request) => {
   return headerId || queryId || null;
 };
 
+const respondWithClientId = (clientId: string | null) => {
+  const headers = new Headers();
+  if (clientId) {
+    headers.set("X-AdobeSign-ClientId", clientId);
+  }
+  const body = clientId ? { xAdobeSignClientId: clientId } : { ok: true };
+  return NextResponse.json(body, { headers });
+};
+
 export async function POST(request: Request) {
   const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
+  const providedClientId = getClientId(request);
   if (expectedClientId) {
-    const providedClientId = getClientId(request);
     if (providedClientId && providedClientId !== expectedClientId) {
       return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
     }
@@ -65,12 +74,12 @@ export async function POST(request: Request) {
   try {
     payload = await request.json();
   } catch {
-    return NextResponse.json({ ok: true });
+    return respondWithClientId(providedClientId);
   }
 
   const agreementId = extractAgreementId(payload);
   if (!agreementId) {
-    return NextResponse.json({ ok: true });
+    return respondWithClientId(providedClientId);
   }
 
   const eventType = extractEventType(payload);
@@ -81,7 +90,7 @@ export async function POST(request: Request) {
   });
 
   if (!agreement) {
-    return NextResponse.json({ ok: true });
+    return respondWithClientId(providedClientId);
   }
 
   if (status && agreement.status !== status) {
@@ -99,16 +108,16 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true });
+  return respondWithClientId(providedClientId);
 }
 
 export async function GET(request: Request) {
   const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
+  const providedClientId = getClientId(request);
   if (expectedClientId) {
-    const providedClientId = getClientId(request);
     if (providedClientId && providedClientId !== expectedClientId) {
       return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
     }
   }
-  return NextResponse.json({ ok: true });
+  return respondWithClientId(providedClientId);
 }
