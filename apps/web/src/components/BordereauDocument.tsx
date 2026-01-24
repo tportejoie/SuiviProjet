@@ -121,7 +121,8 @@ const BordereauDocument: React.FC<BordereauDocumentProps> = ({
   const footerLine3 = [
     company?.capital ? `Capital : ${company.capital}` : "Capital : 1 500 EUR",
     company?.rcs ? company.rcs : "RCS Vienne 845 021 690 00043",
-    company?.tvaNumber ? `TVA : ${company.tvaNumber}` : "TVA : FR55845021690"
+    company?.tvaNumber ? `TVA : ${company.tvaNumber}` : "TVA : FR55845021690",
+    company?.siret ? `SIRET : ${company.siret}` : "SIRET : 845 021 690 00043"
   ].join(" - ");
 
   const commentMap = new Map(
