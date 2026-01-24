@@ -64,22 +64,18 @@ const respondWithClientId = (clientId: string | null) => {
 export async function POST(request: Request) {
   const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
   const providedClientId = getClientId(request);
-  if (expectedClientId) {
-    if (providedClientId && providedClientId !== expectedClientId) {
-      return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
-    }
-  }
+  const responseClientId = providedClientId || expectedClientId || null;
 
   let payload: any = null;
   try {
     payload = await request.json();
   } catch {
-    return respondWithClientId(providedClientId);
+    return respondWithClientId(responseClientId);
   }
 
   const agreementId = extractAgreementId(payload);
   if (!agreementId) {
-    return respondWithClientId(providedClientId);
+    return respondWithClientId(responseClientId);
   }
 
   const eventType = extractEventType(payload);
@@ -90,7 +86,7 @@ export async function POST(request: Request) {
   });
 
   if (!agreement) {
-    return respondWithClientId(providedClientId);
+    return respondWithClientId(responseClientId);
   }
 
   if (status && agreement.status !== status) {
@@ -108,16 +104,12 @@ export async function POST(request: Request) {
     });
   }
 
-  return respondWithClientId(providedClientId);
+  return respondWithClientId(responseClientId);
 }
 
 export async function GET(request: Request) {
   const expectedClientId = process.env.ADOBE_SIGN_CLIENT_ID;
   const providedClientId = getClientId(request);
-  if (expectedClientId) {
-    if (providedClientId && providedClientId !== expectedClientId) {
-      return NextResponse.json({ ok: false, error: "Invalid client id" }, { status: 401 });
-    }
-  }
-  return respondWithClientId(providedClientId);
+  const responseClientId = providedClientId || expectedClientId || null;
+  return respondWithClientId(responseClientId);
 }
