@@ -34,6 +34,7 @@ const mapStatus = (eventType: string | null) => {
     case "AGREEMENT_ACTION_COMPLETED":
     case "AGREEMENT_SIGNED":
     case "AGREEMENT_COMPLETED":
+    case "AGREEMENT_WORKFLOW_COMPLETED":
       return "SIGNED";
     case "AGREEMENT_CANCELLED":
       return "CANCELLED";
@@ -80,12 +81,20 @@ export async function POST(request: Request) {
   try {
     payload = await request.json();
   } catch {
+    console.warn("Adobe Sign webhook: invalid JSON payload");
     return respondWithClientId(responseClientId);
   }
+
+  console.info("Adobe Sign webhook received", {
+    hasEvents: Array.isArray(payload?.events) || Array.isArray(payload?.eventList) || Array.isArray(payload?.event_list),
+    hasEvent: Boolean(payload?.event),
+    agreementId: extractAgreementId(payload)
+  });
 
   const events = extractEvents(payload);
   const baseAgreementId = extractAgreementId(payload);
   if (!events.length && !baseAgreementId) {
+    console.info("Adobe Sign webhook: no agreementId found");
     return respondWithClientId(responseClientId);
   }
 
@@ -101,6 +110,12 @@ export async function POST(request: Request) {
     if (!event.agreementId) continue;
     const status = mapStatus(event.eventType);
     if (!status) continue;
+
+    console.info("Adobe Sign webhook event", {
+      agreementId: event.agreementId,
+      eventType: event.eventType,
+      status
+    });
 
     const agreement = await prisma.adobeAgreement.findFirst({
       where: { providerId: event.agreementId }
