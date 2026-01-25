@@ -1,5 +1,12 @@
 import { BordereauComment, Client, CompanySettings, Contact, Deliverable, PeriodLock, Project, ProjectSituationSnapshot, TimeEntry, User } from "@/types";
 
+type BordereauGenerateResponse = {
+  bordereau?: unknown;
+  version?: {
+    fileId?: string;
+  };
+};
+
 const fetchJson = async <T>(url: string, options?: RequestInit): Promise<T> => {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json" },
@@ -209,7 +216,7 @@ export const generateBordereau = (payload: {
   actorName: string;
   sendForSignature?: boolean;
 }) =>
-  fetchJson("/api/bordereaux/generate", {
+  fetchJson<BordereauGenerateResponse>("/api/bordereaux/generate", {
     method: "POST",
     body: JSON.stringify(payload)
   });
