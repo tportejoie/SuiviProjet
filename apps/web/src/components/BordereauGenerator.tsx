@@ -33,6 +33,9 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
   const [isReminding, setIsReminding] = useState(false);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
   const [lastGeneratedFileId, setLastGeneratedFileId] = useState<string | null>(null);
+  const [adobeSignEnabled, setAdobeSignEnabled] = useState(
+    process.env.NEXT_PUBLIC_ADOBE_SIGN_ENABLED === 'true'
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -68,6 +71,26 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
       isMounted = false;
     };
   }, [project.id, selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadConfig = async () => {
+      try {
+        const response = await fetch('/api/config', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!cancelled && typeof data?.adobeSignEnabled === 'boolean') {
+          setAdobeSignEnabled(data.adobeSignEnabled);
+        }
+      } catch {
+        // keep build-time default
+      }
+    };
+    loadConfig();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const commentMap = useMemo(() => {
     return new Map(comments.map(c => [`${c.day}-${c.type}`, c]));
@@ -231,7 +254,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
                 <span>Telecharger</span>
               </a>
             )}
-            {process.env.NEXT_PUBLIC_ADOBE_SIGN_ENABLED === 'true' && (
+            {adobeSignEnabled && (
               <>
                 <button
                   onClick={async () => {
