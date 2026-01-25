@@ -192,7 +192,7 @@ const ClientList: React.FC<ClientListProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-2xl font-bold text-slate-900">Base Clients</h2>
         <button
           onClick={() => {
@@ -209,8 +209,8 @@ const ClientList: React.FC<ClientListProps> = ({
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <div className="relative w-96">
+        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="relative w-full sm:w-96">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
@@ -220,73 +220,75 @@ const ClientList: React.FC<ClientListProps> = ({
           </div>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-slate-500 font-bold bg-slate-50/50">
-              <th className="px-6 py-4 text-left">Raison Sociale</th>
-              <th className="px-6 py-4 text-left">SIREN / SIRET</th>
-              <th className="px-6 py-4 text-left">Adresse</th>
-              <th className="px-6 py-4 text-center">Contacts</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {clients.map((client) => (
-              <tr key={client.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
-                      <Building2 size={20} />
-                    </div>
-                    <span className="font-bold text-slate-900">{client.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <p className="text-slate-900 font-medium">{client.siren}</p>
-                  <p className="text-xs text-slate-400">{client.siret}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-slate-500 line-clamp-1 max-w-[200px]">{client.address}</span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">
-                    {contacts.filter((c) => c.clientId === client.id && c.active).length} actifs
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="inline-flex items-center gap-2">
-                    <button
-                      onClick={() => startEdit(client)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                    >
-                      <Pencil size={14} />
-                      Modifier
-                    </button>
-                    {currentUser.role === UserRole.ADMIN ? (
-                      <button
-                        onClick={() => handleDelete(client, true)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                        title="Suppression forcee (admin)"
-                      >
-                        <Trash2 size={14} />
-                        Supprimer
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleDelete(client)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                        title="Supprimer"
-                      >
-                        <Trash2 size={14} />
-                        Supprimer
-                      </button>
-                    )}
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[900px]">
+            <thead>
+              <tr className="text-slate-500 font-bold bg-slate-50/50">
+                <th className="px-6 py-4 text-left">Raison Sociale</th>
+                <th className="px-6 py-4 text-left">SIREN / SIRET</th>
+                <th className="px-6 py-4 text-left">Adresse</th>
+                <th className="px-6 py-4 text-center">Contacts</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {clients.map((client) => (
+                <tr key={client.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                        <Building2 size={20} />
+                      </div>
+                      <span className="font-bold text-slate-900">{client.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-slate-900 font-medium">{client.siren}</p>
+                    <p className="text-xs text-slate-400">{client.siret}</p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-slate-500 line-clamp-1 max-w-[260px]">{client.address}</span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">
+                      {contacts.filter((c) => c.clientId === client.id && c.active).length} actifs
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="inline-flex items-center gap-2 flex-wrap justify-end">
+                      <button
+                        onClick={() => startEdit(client)}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                      >
+                        <Pencil size={14} />
+                        Modifier
+                      </button>
+                      {currentUser.role === UserRole.ADMIN ? (
+                        <button
+                          onClick={() => handleDelete(client, true)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                          title="Suppression forcee (admin)"
+                        >
+                          <Trash2 size={14} />
+                          Supprimer
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleDelete(client)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                          title="Supprimer"
+                        >
+                          <Trash2 size={14} />
+                          Supprimer
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isOpen && (

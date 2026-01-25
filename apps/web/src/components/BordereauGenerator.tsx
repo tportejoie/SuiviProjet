@@ -172,9 +172,9 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 flex items-center justify-between no-print">
-        <div className="flex items-center space-x-6">
-          <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+      <div className="bg-white p-4 md:p-8 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4 no-print">
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="p-3 md:p-4 bg-amber-50 rounded-2xl border border-amber-100">
             <Printer size={32} className="text-amber-600" />
           </div>
           <div>
@@ -182,10 +182,10 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
             <p className="text-sm text-slate-500 font-medium tracking-tight">Version immuable prete pour validation client</p>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2 bg-slate-100 rounded-lg px-3 py-2">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-full lg:w-auto">
             <span className="text-[10px] font-black uppercase text-slate-500">Periode</span>
-            <div className="flex bg-white border border-slate-200 rounded-md overflow-hidden">
+            <div className="flex bg-white border border-slate-200 rounded-md overflow-x-auto sm:overflow-visible flex-nowrap sm:flex-wrap">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(m => (
                 <button
                   key={m}
@@ -206,10 +206,10 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
               className="w-20 bg-white border border-slate-200 rounded-md px-2 py-1 text-xs font-bold text-slate-700"
             />
           </div>
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={handlePrint}
-              className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-800 transition-all shadow-lg"
+              className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-slate-900 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black uppercase text-[10px] md:text-xs hover:bg-slate-800 transition-all shadow-lg"
             >
               <Download size={18} />
               <span>Imprimer / PDF</span>
@@ -217,7 +217,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
             <button
               onClick={() => handleGeneratePdf(false)}
               disabled={isGenerating || isSending}
-              className="flex items-center space-x-2 bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-60"
+              className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-amber-500 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black uppercase text-[10px] md:text-xs hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-60"
             >
               <Download size={18} />
               <span>{isGenerating ? 'Generation...' : 'Generer PDF'}</span>
@@ -225,7 +225,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
             {lastGeneratedFileId && (
               <a
                 href={`/api/files/${lastGeneratedFileId}?download=1`}
-                className="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-50 transition-all shadow-lg"
+                className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-white border border-slate-200 text-slate-700 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black uppercase text-[10px] md:text-xs hover:bg-slate-50 transition-all shadow-lg"
               >
                 <Download size={18} />
                 <span>Telecharger</span>
@@ -240,7 +240,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
                     setIsSending(false);
                   }}
                   disabled={isGenerating || isSending}
-                  className="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-60"
+                  className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-emerald-600 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black uppercase text-[10px] md:text-xs hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-60"
                 >
                   <Send size={18} />
                   <span>{isSending ? 'Envoi...' : 'Envoyer pour signature'}</span>
@@ -248,7 +248,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
                 <button
                   onClick={handleRemind}
                   disabled={!canRemind || isReminding}
-                  className="flex items-center space-x-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-300 transition-all shadow-lg disabled:opacity-60"
+                  className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-slate-200 text-slate-700 px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-black uppercase text-[10px] md:text-xs hover:bg-slate-300 transition-all shadow-lg disabled:opacity-60"
                 >
                   <RefreshCw size={18} />
                   <span>{isReminding ? 'Relance...' : 'Relancer signature'}</span>

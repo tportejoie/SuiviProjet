@@ -331,20 +331,20 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, clients, contacts, 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-2xl font-bold text-slate-900">Base Projets</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={handleExport}
             disabled={isExporting}
-            className="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors disabled:opacity-60"
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-white border border-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors disabled:opacity-60"
           >
             <Download size={18} />
             <span>{isExporting ? 'Export...' : 'Exporter Excel'}</span>
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center space-x-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-lg"
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors shadow-lg"
           >
             <Plus size={20} />
             <span>Nouveau Projet</span>
@@ -352,7 +352,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, clients, contacts, 
         </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
@@ -361,7 +361,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, clients, contacts, 
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
           />
         </div>
-        <button className="flex items-center space-x-2 bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
+        <button className="flex items-center justify-center space-x-2 w-full sm:w-auto bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">
           <Filter size={18} />
           <span>Filtres</span>
         </button>

@@ -134,12 +134,12 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden no-print">
-        <div className="flex border-b border-slate-100 bg-slate-50/30">
+        <div className="flex overflow-x-auto border-b border-slate-100 bg-slate-50/30">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 px-6 py-4 text-sm font-bold transition-all border-b-2 ${
+              className={`flex items-center space-x-2 px-4 md:px-6 py-3 md:py-4 text-sm font-bold transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-amber-500 text-amber-600 bg-white'
                   : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
@@ -151,7 +151,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({
           ))}
         </div>
 
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           {activeTab === 'general' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <section className="space-y-8">
@@ -315,8 +315,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({
           {activeTab === 'tracking' && project.type === ProjectType.FORFAIT && (
             <div className="space-y-4">
               <h5 className="font-black text-slate-800 uppercase tracking-tighter text-sm mb-4">Echeancier & Livrables</h5>
-              <div className="overflow-hidden border border-slate-200 rounded-2xl shadow-sm bg-white">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-sm bg-white">
+                <table className="w-full text-sm min-w-[720px]">
                   <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                     <tr>
                       <th className="px-6 py-4 text-left font-black uppercase text-[10px]">Libelle Livrable</th>

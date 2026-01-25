@@ -116,7 +116,7 @@ const UserList: React.FC<UserListProps> = ({ currentUser }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-2xl font-bold text-slate-900">Utilisateurs</h2>
         <button
           onClick={openCreate}
@@ -134,55 +134,57 @@ const UserList: React.FC<UserListProps> = ({ currentUser }) => {
       )}
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4 text-left font-black uppercase text-[10px]">Nom</th>
-              <th className="px-6 py-4 text-left font-black uppercase text-[10px]">Email</th>
-              <th className="px-6 py-4 text-center font-black uppercase text-[10px]">Role</th>
-              <th className="px-6 py-4 text-center font-black uppercase text-[10px]">Actif</th>
-              <th className="px-6 py-4 text-right font-black uppercase text-[10px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {users.map(user => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 font-semibold text-slate-900">{user.name || '-'}</td>
-                <td className="px-6 py-4 text-slate-600">{user.email}</td>
-                <td className="px-6 py-4 text-center text-slate-600 font-bold">{user.role}</td>
-                <td className="px-6 py-4 text-center">
-                  <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${
-                    user.active ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
-                  }`}>
-                    {user.active ? 'Actif' : 'Inactif'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    <button onClick={() => openEdit(user)} className="text-slate-400 hover:text-slate-600">
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user)}
-                      disabled={user.id === currentUser.id}
-                      title={user.id === currentUser.id ? 'Suppression impossible' : 'Supprimer'}
-                      className="text-rose-400 hover:text-rose-600 disabled:text-slate-300 disabled:cursor-not-allowed"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[760px]">
+            <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">
-                  Aucun utilisateur.
-                </td>
+                <th className="px-6 py-4 text-left font-black uppercase text-[10px]">Nom</th>
+                <th className="px-6 py-4 text-left font-black uppercase text-[10px]">Email</th>
+                <th className="px-6 py-4 text-center font-black uppercase text-[10px]">Role</th>
+                <th className="px-6 py-4 text-center font-black uppercase text-[10px]">Actif</th>
+                <th className="px-6 py-4 text-right font-black uppercase text-[10px]">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {users.map(user => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 font-semibold text-slate-900">{user.name || '-'}</td>
+                  <td className="px-6 py-4 text-slate-600">{user.email}</td>
+                  <td className="px-6 py-4 text-center text-slate-600 font-bold">{user.role}</td>
+                  <td className="px-6 py-4 text-center">
+                    <span className={`inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter ${
+                      user.active ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    }`}>
+                      {user.active ? 'Actif' : 'Inactif'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <button onClick={() => openEdit(user)} className="text-slate-400 hover:text-slate-600">
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user)}
+                        disabled={user.id === currentUser.id}
+                        title={user.id === currentUser.id ? 'Suppression impossible' : 'Supprimer'}
+                        className="text-rose-400 hover:text-rose-600 disabled:text-slate-300 disabled:cursor-not-allowed"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">
+                    Aucun utilisateur.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isOpen && (

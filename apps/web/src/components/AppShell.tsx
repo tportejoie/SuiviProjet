@@ -94,9 +94,20 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 overflow-hidden">
+    <div className="min-h-screen flex bg-slate-50 overflow-hidden relative">
+      {isSidebarOpen && (
+        <button
+          aria-label="Close menu"
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 bg-slate-950/40 z-10 md:hidden"
+        />
+      )}
       {/* Sidebar */}
-      <aside className={`bg-slate-900 text-white transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} flex flex-col no-print shadow-2xl z-20`}>
+      <aside
+        className={`bg-slate-900 text-white transition-all duration-300 flex flex-col no-print shadow-2xl z-20 fixed inset-y-0 left-0 w-64 md:static md:translate-x-0 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        } ${isSidebarOpen ? 'md:w-64' : 'md:w-20'}`}
+      >
         <div className="p-6 flex items-center justify-between border-b border-slate-800">
           {isSidebarOpen ? (
             <div className="flex items-center gap-2">
@@ -137,9 +148,16 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden overflow-y-auto">
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center px-8 justify-between sticky top-0 z-10 no-print">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden overflow-y-auto overflow-x-hidden min-w-0 md:ml-0">
+        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 py-3 md:h-16 flex flex-col sm:flex-row sm:items-center gap-3 px-4 md:px-8 justify-between sticky top-0 z-10 no-print">
           <div className="flex items-center text-slate-400 text-sm">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="mr-3 md:hidden inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700"
+              aria-label="Open menu"
+            >
+              <Menu size={18} />
+            </button>
              <span className="capitalize font-medium">{currentView}</span>
              {selectedProject && currentView === 'detail' && (
                <>
@@ -148,7 +166,7 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
                </>
              )}
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
             <div className="flex flex-col items-end">
               <span className="text-sm font-bold text-slate-900">
                 {currentUser.name || currentUser.email}
@@ -172,7 +190,7 @@ const App: React.FC<AppProps> = ({ currentUser }) => {
           </div>
         </header>
 
-        <div className="p-8 pb-20 max-w-7xl mx-auto w-full">
+        <div className="p-4 md:p-8 pb-20 max-w-7xl mx-auto w-full">
           {currentView === 'dashboard' && (
             <Dashboard projects={projects} clients={clients} snapshots={snapshots} isLoading={isLoading} />
           )}

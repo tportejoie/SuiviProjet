@@ -128,23 +128,23 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-4">
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
           <select
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="border border-slate-300 rounded-lg px-4 py-2 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+            className="border border-slate-300 rounded-lg px-4 py-2 bg-white font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none w-full lg:w-auto"
           >
             {projects.map(p => (
               <option key={p.id} value={p.id}>{p.projectNumber} - {p.designation}</option>
             ))}
           </select>
-          <div className="flex bg-slate-100 p-1 rounded-lg">
+          <div className="flex bg-slate-100 p-1 rounded-lg overflow-x-auto">
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(m => (
               <button
                 key={m}
                 onClick={() => setSelectedMonth(m)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${selectedMonth === m ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap ${selectedMonth === m ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 {getMonthName(m).substring(0, 3).toUpperCase()}
               </button>
@@ -161,7 +161,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
           />
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
           {isLocked ? (
             <div className="flex items-center space-x-2 text-rose-600 bg-rose-50 px-4 py-2 rounded-lg border border-rose-100 font-bold text-sm">
               <Lock size={16} />
@@ -170,7 +170,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
           ) : (
             <button
               onClick={handleCloseMonth}
-              className="flex items-center space-x-2 bg-slate-900 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors"
+              className="flex items-center space-x-2 bg-slate-900 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-800 transition-colors w-full sm:w-auto justify-center"
             >
               <FileCheck size={18} />
               <span>Cloturer le Mois</span>
@@ -179,7 +179,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
           {isLocked && currentUser.role === UserRole.ADMIN && (
             <button
               onClick={handleUnlock}
-              className="flex items-center space-x-2 bg-white border border-rose-200 text-rose-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-rose-50 transition-colors"
+              className="flex items-center space-x-2 bg-white border border-rose-200 text-rose-700 px-4 py-2 rounded-lg font-bold text-xs hover:bg-rose-50 transition-colors w-full sm:w-auto justify-center"
             >
               <Lock size={14} />
               <span>Deverrouiller</span>
@@ -195,12 +195,12 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
       )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h4 className="font-bold flex items-center space-x-2">
             <CalendarClock className="text-amber-500" />
             <span>Saisie des heures - {getMonthName(selectedMonth)} {selectedYear}</span>
           </h4>
-          <div className="flex space-x-6 text-sm">
+          <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex flex-col items-end">
               <span className="text-xs text-slate-400 font-bold">Total BO</span>
               <span className="font-bold text-slate-900">{totalsBO.days.toFixed(3)} j ({totalsBO.hours}h)</span>
@@ -213,7 +213,7 @@ const ImputationManager: React.FC<ImputationManagerProps> = ({ projects, current
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
+          <table className="w-full text-sm border-collapse min-w-[720px]">
             <thead>
               <tr className="bg-slate-50 text-slate-500">
                 <th className="p-3 text-left w-24 border-b">Mode</th>

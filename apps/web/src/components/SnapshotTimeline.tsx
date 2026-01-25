@@ -81,7 +81,7 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h5 className="font-bold text-slate-800">Timeline des situations (Snapshots)</h5>
         <div className="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-bold">
           DONNEES IMMUABLES - HISTORIQUE D'AUDIT
@@ -100,7 +100,7 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
                 {getIcon(snap.type)}
               </div>
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm group-hover:border-slate-300 transition-colors">
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
                   <div>
                     <div className="flex items-center gap-2">
                       <h6 className="font-bold text-slate-900">{getLabel(snap.type)}</h6>
@@ -123,7 +123,7 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
                   ID: {snap.id} | Ver: {snap.computedAt.split('T')[0]} | Status: LOCKED
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center text-xs text-slate-400">
                     <User size={12} className="mr-1" /> Par {snap.computedBy}
                   </div>
@@ -137,7 +137,7 @@ const SnapshotTimeline: React.FC<SnapshotTimelineProps> = ({ snapshots, isLoadin
                       );
                     }
                     return (
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
                         <a
                           href={`/api/files/${file.fileId}`}
                           target="_blank"
