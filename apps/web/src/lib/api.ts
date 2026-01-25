@@ -207,6 +207,7 @@ export const generateBordereau = (payload: {
   periodYear?: number;
   periodMonth?: number;
   actorName: string;
+  sendForSignature?: boolean;
 }) =>
   fetchJson("/api/bordereaux/generate", {
     method: "POST",

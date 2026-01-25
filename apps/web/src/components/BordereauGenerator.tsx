@@ -29,8 +29,10 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
   const [bordereaux, setBordereaux] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [isReminding, setIsReminding] = useState(false);
   const [generatedMessage, setGeneratedMessage] = useState<string | null>(null);
+  const [lastGeneratedFileId, setLastGeneratedFileId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -113,18 +115,25 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
     window.print();
   };
 
-  const handleGeneratePdf = async () => {
+  const handleGeneratePdf = async (sendForSignature: boolean) => {
     setIsGenerating(true);
     setGeneratedMessage(null);
+    setLastGeneratedFileId(null);
     try {
-      await generateBordereau({
+      const result = await generateBordereau({
         projectId: project.id,
         type: project.type === ProjectType.AT ? 'BA' : 'BL',
         periodYear: selectedYear,
         periodMonth: selectedMonth,
-        actorName: project.projectManager
+        actorName: project.projectManager,
+        sendForSignature
       });
-      setGeneratedMessage('Bordereau genere et versionne.');
+      setLastGeneratedFileId(result?.version?.fileId ?? null);
+      setGeneratedMessage(
+        sendForSignature
+          ? 'Bordereau genere et envoye pour signature.'
+          : 'Bordereau genere et disponible au telechargement.'
+      );
     } catch (error) {
       setGeneratedMessage('Erreur lors de la generation du PDF.');
     } finally {
@@ -198,31 +207,54 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
             />
           </div>
           <div className="flex space-x-3">
-          <button
-            onClick={handlePrint}
-            className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-800 transition-all shadow-lg"
-          >
-            <Download size={18} />
-            <span>Imprimer / PDF</span>
-          </button>
-          <button
-            onClick={handleGeneratePdf}
-            disabled={isGenerating}
-            className="flex items-center space-x-2 bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-60"
-          >
-            <Send size={18} />
-            <span>{isGenerating ? 'Generation...' : 'Generer PDF'}</span>
-          </button>
-          {process.env.NEXT_PUBLIC_ADOBE_SIGN_ENABLED === 'true' && (
             <button
-              onClick={handleRemind}
-              disabled={!canRemind || isReminding}
-              className="flex items-center space-x-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-300 transition-all shadow-lg disabled:opacity-60"
+              onClick={handlePrint}
+              className="flex items-center space-x-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-800 transition-all shadow-lg"
             >
-              <RefreshCw size={18} />
-              <span>{isReminding ? 'Relance...' : 'Relancer signature'}</span>
+              <Download size={18} />
+              <span>Imprimer / PDF</span>
             </button>
-          )}
+            <button
+              onClick={() => handleGeneratePdf(false)}
+              disabled={isGenerating || isSending}
+              className="flex items-center space-x-2 bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-60"
+            >
+              <Download size={18} />
+              <span>{isGenerating ? 'Generation...' : 'Generer PDF'}</span>
+            </button>
+            {lastGeneratedFileId && (
+              <a
+                href={`/api/files/${lastGeneratedFileId}?download=1`}
+                className="flex items-center space-x-2 bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-50 transition-all shadow-lg"
+              >
+                <Download size={18} />
+                <span>Telecharger</span>
+              </a>
+            )}
+            {process.env.NEXT_PUBLIC_ADOBE_SIGN_ENABLED === 'true' && (
+              <>
+                <button
+                  onClick={async () => {
+                    setIsSending(true);
+                    await handleGeneratePdf(true);
+                    setIsSending(false);
+                  }}
+                  disabled={isGenerating || isSending}
+                  className="flex items-center space-x-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-emerald-700 transition-all shadow-lg disabled:opacity-60"
+                >
+                  <Send size={18} />
+                  <span>{isSending ? 'Envoi...' : 'Envoyer pour signature'}</span>
+                </button>
+                <button
+                  onClick={handleRemind}
+                  disabled={!canRemind || isReminding}
+                  className="flex items-center space-x-2 bg-slate-200 text-slate-700 px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-slate-300 transition-all shadow-lg disabled:opacity-60"
+                >
+                  <RefreshCw size={18} />
+                  <span>{isReminding ? 'Relance...' : 'Relancer signature'}</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

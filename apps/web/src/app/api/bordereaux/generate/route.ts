@@ -64,7 +64,12 @@ export async function POST(request: Request) {
       file: stored
     });
 
-    if (process.env.ADOBE_SIGN_ENABLED === "true") {
+    const wantsSignature = payload.sendForSignature === true;
+    if (wantsSignature && process.env.ADOBE_SIGN_ENABLED !== "true") {
+      return jsonErrorWithDetail("Adobe Sign disabled", "ADOBE_SIGN_ENABLED is false", 400);
+    }
+
+    if (wantsSignature && process.env.ADOBE_SIGN_ENABLED === "true") {
       const apiKey = process.env.ADOBE_SIGN_API_KEY;
       if (!apiKey) {
         return jsonErrorWithDetail("Adobe Sign misconfigured", "Missing ADOBE_SIGN_API_KEY", 500);
