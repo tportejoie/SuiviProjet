@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Client, User, UserRole } from '@/types';
+import { Client, Contact, User, UserRole } from '@/types';
 import { Plus, Search, Building2, Pencil, Trash2, Users } from 'lucide-react';
 import { createClient, deleteClient, parseClientOrder, updateClient, updateContact } from '@/lib/api';
 
 interface ClientListProps {
   clients: Client[];
-  contacts: { clientId: string; active: boolean }[];
+  contacts: Contact[];
   currentUser: User;
   onCreated: (client: Client) => void;
   onDeleted: (clientId: string) => void;
