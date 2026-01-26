@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Client, Contact, User, UserRole } from '@/types';
 import { Plus, Search, Building2, Pencil, Trash2, Users } from 'lucide-react';
-import { createClient, deleteClient, parseClientOrder, updateClient, updateContact } from '@/lib/api';
+import { createClient, deleteClient, deleteContact, parseClientOrder, updateClient, updateContact } from '@/lib/api';
 
 interface ClientListProps {
   clients: Client[];
@@ -35,6 +35,17 @@ const ClientList: React.FC<ClientListProps> = ({
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [contactClientId, setContactClientId] = useState<string | null>(null);
   const [isUpdatingContact, setIsUpdatingContact] = useState<string | null>(null);
+  const [contactSelection, setContactSelection] = useState<string[]>([]);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [isSavingContact, setIsSavingContact] = useState(false);
+  const [isDeletingContacts, setIsDeletingContacts] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    role: '',
+    phone: '',
+    active: true
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
@@ -55,6 +66,12 @@ const ClientList: React.FC<ClientListProps> = ({
   useEffect(() => {
     setLocalContacts(contacts);
   }, [contacts]);
+
+  useEffect(() => {
+    setContactSelection([]);
+    setEditingContactId(null);
+    setError(null);
+  }, [contactClientId]);
 
   const contactsForClient = useMemo(() => {
     if (!contactClientId) return [];
@@ -212,6 +229,78 @@ const ClientList: React.FC<ClientListProps> = ({
       setError("Impossible de mettre a jour le contact.");
     } finally {
       setIsUpdatingContact(null);
+    }
+  };
+
+  const startEditContact = (contact: Contact) => {
+    setEditingContactId(contact.id);
+    setContactForm({
+      name: contact.name,
+      email: contact.email,
+      role: contact.role,
+      phone: contact.phone || '',
+      active: contact.active
+    });
+    setError(null);
+  };
+
+  const cancelEditContact = () => {
+    setEditingContactId(null);
+    setError(null);
+  };
+
+  const handleSaveContact = async () => {
+    if (!editingContactId) return;
+    setIsSavingContact(true);
+    setError(null);
+    try {
+      const updated = await updateContact(editingContactId, {
+        name: contactForm.name.trim(),
+        email: contactForm.email.trim(),
+        role: contactForm.role.trim(),
+        phone: contactForm.phone.trim() ? contactForm.phone.trim() : null,
+        active: contactForm.active
+      });
+      setLocalContacts((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      setEditingContactId(null);
+    } catch {
+      setError("Impossible de mettre a jour le contact.");
+    } finally {
+      setIsSavingContact(false);
+    }
+  };
+
+  const toggleContactSelection = (contactId: string) => {
+    setContactSelection((prev) =>
+      prev.includes(contactId) ? prev.filter((id) => id !== contactId) : [...prev, contactId]
+    );
+  };
+
+  const toggleSelectAllContacts = () => {
+    if (contactsForClient.length === 0) return;
+    if (contactSelection.length === contactsForClient.length) {
+      setContactSelection([]);
+    } else {
+      setContactSelection(contactsForClient.map((contact) => contact.id));
+    }
+  };
+
+  const handleDeleteSelectedContacts = async () => {
+    if (contactSelection.length === 0) return;
+    const confirmed = window.confirm(
+      "Supprimer les contacts selectionnes ?\n\nCette action est definitive."
+    );
+    if (!confirmed) return;
+    setIsDeletingContacts(true);
+    setError(null);
+    try {
+      await Promise.all(contactSelection.map((contactId) => deleteContact(contactId)));
+      setLocalContacts((prev) => prev.filter((contact) => !contactSelection.includes(contact.id)));
+      setContactSelection([]);
+    } catch {
+      setError("Impossible de supprimer un ou plusieurs contacts.");
+    } finally {
+      setIsDeletingContacts(false);
     }
   };
 
@@ -453,26 +542,126 @@ const ClientList: React.FC<ClientListProps> = ({
                 Fermer
               </button>
             </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+              <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-500">
+                <input
+                  type="checkbox"
+                  checked={contactsForClient.length > 0 && contactSelection.length === contactsForClient.length}
+                  onChange={toggleSelectAllContacts}
+                />
+                Tout selectionner
+              </label>
+              <button
+                onClick={handleDeleteSelectedContacts}
+                disabled={contactSelection.length === 0 || isDeletingContacts}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-rose-200 text-xs font-bold text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+              >
+                <Trash2 size={14} />
+                {isDeletingContacts ? 'Suppression...' : `Supprimer (${contactSelection.length})`}
+              </button>
+            </div>
 
             {contactsForClient.length === 0 ? (
               <div className="text-sm text-slate-500">Aucun contact associe a ce client.</div>
             ) : (
               <div className="divide-y divide-slate-100">
                 {contactsForClient.map((contact) => (
-                  <div key={contact.id} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                      <p className="font-bold text-slate-900">{contact.name}</p>
-                      <p className="text-xs text-slate-500">{contact.role} · {contact.email}</p>
+                  <div key={contact.id} className="py-4 flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <input
+                          type="checkbox"
+                          checked={contactSelection.includes(contact.id)}
+                          onChange={() => toggleContactSelection(contact.id)}
+                        />
+                        Selectionner
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => startEditContact(contact)}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                        >
+                          <Pencil size={14} />
+                          Modifier
+                        </button>
+                        <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-600">
+                          <input
+                            type="checkbox"
+                            checked={contact.active}
+                            disabled={isUpdatingContact === contact.id || editingContactId === contact.id}
+                            onChange={(e) => handleToggleContact(contact.id, e.target.checked)}
+                          />
+                          {contact.active ? 'Actif' : 'Inactif'}
+                        </label>
+                      </div>
                     </div>
-                    <label className="inline-flex items-center gap-3 text-xs font-bold text-slate-600">
-                      <input
-                        type="checkbox"
-                        checked={contact.active}
-                        disabled={isUpdatingContact === contact.id}
-                        onChange={(e) => handleToggleContact(contact.id, e.target.checked)}
-                      />
-                      {contact.active ? 'Actif' : 'Inactif'}
-                    </label>
+                    {editingContactId === contact.id ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nom</label>
+                          <input
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email</label>
+                          <input
+                            value={contactForm.email}
+                            onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Role</label>
+                          <input
+                            value={contactForm.role}
+                            onChange={(e) => setContactForm((prev) => ({ ...prev, role: e.target.value }))}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Telephone</label>
+                          <input
+                            value={contactForm.phone}
+                            onChange={(e) => setContactForm((prev) => ({ ...prev, phone: e.target.value }))}
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 md:col-span-2">
+                          <input
+                            type="checkbox"
+                            checked={contactForm.active}
+                            onChange={(e) => setContactForm((prev) => ({ ...prev, active: e.target.checked }))}
+                          />
+                          {contactForm.active ? 'Actif' : 'Inactif'}
+                        </label>
+                        <div className="flex flex-wrap gap-2 md:col-span-2">
+                          <button
+                            onClick={handleSaveContact}
+                            disabled={isSavingContact}
+                            className="px-3 py-2 text-xs font-bold bg-amber-500 text-white rounded-lg disabled:opacity-60"
+                          >
+                            {isSavingContact ? 'Enregistrement...' : 'Enregistrer'}
+                          </button>
+                          <button
+                            onClick={cancelEditContact}
+                            className="px-3 py-2 text-xs font-bold text-slate-600"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="font-bold text-slate-900">{contact.name}</p>
+                        <p className="text-xs text-slate-500">
+                          {contact.role} · {contact.email}
+                          {contact.phone ? ` · ${contact.phone}` : ''}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
