@@ -59,8 +59,13 @@ const ClientList: React.FC<ClientListProps> = ({
     notes: ''
   });
 
+  const normalizeDigits = (value: string) => value.replace(/\D/g, '');
+
   const updateField = (key: keyof ClientFormState, value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    const nextValue = key === 'siren' || key === 'siret'
+      ? normalizeDigits(value)
+      : value;
+    setForm((prev) => ({ ...prev, [key]: nextValue }));
   };
 
   useEffect(() => {
@@ -114,9 +119,13 @@ const ClientList: React.FC<ClientListProps> = ({
       setError('Merci de renseigner tous les champs obligatoires.');
       return;
     }
-    if (form.siret && !/^\d{14}$/.test(form.siret)) {
+    const normalizedSiret = normalizeDigits(form.siret);
+    if (normalizedSiret && !/^\d{14}$/.test(normalizedSiret)) {
       setError('Le SIRET doit contenir exactement 14 chiffres.');
       return;
+    }
+    if (normalizedSiret !== form.siret) {
+      setForm((prev) => ({ ...prev, siret: normalizedSiret }));
     }
     setIsSaving(true);
     try {
@@ -125,7 +134,7 @@ const ClientList: React.FC<ClientListProps> = ({
           name: form.name,
           address: form.address,
           siren: form.siren || undefined,
-          siret: form.siret || '',
+          siret: normalizedSiret || '',
           tvaIntra: form.tvaIntra || undefined,
           notes: form.notes || undefined
         });
@@ -135,7 +144,7 @@ const ClientList: React.FC<ClientListProps> = ({
           name: form.name,
           address: form.address,
           siren: form.siren || undefined,
-          siret: form.siret || '',
+          siret: normalizedSiret || '',
           tvaIntra: form.tvaIntra || undefined,
           notes: form.notes || undefined
         });
