@@ -59,12 +59,17 @@ const ClientList: React.FC<ClientListProps> = ({
     notes: ''
   });
 
-  const normalizeDigits = (value: string) => value.replace(/\D/g, '');
+  const normalizeDigits = (value: string, maxLength?: number) => {
+    const digits = value.replace(/\D/g, '');
+    return typeof maxLength === 'number' ? digits.slice(0, maxLength) : digits;
+  };
 
   const updateField = (key: keyof ClientFormState, value: string) => {
-    const nextValue = key === 'siren' || key === 'siret'
-      ? normalizeDigits(value)
-      : value;
+    const nextValue = key === 'siren'
+      ? normalizeDigits(value, 9)
+      : key === 'siret'
+        ? normalizeDigits(value, 14)
+        : value;
     setForm((prev) => ({ ...prev, [key]: nextValue }));
   };
 
@@ -491,7 +496,6 @@ const ClientList: React.FC<ClientListProps> = ({
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-1">SIRET</label>
                   <input
                     inputMode="numeric"
-                    pattern="\\d{14}"
                     value={form.siret}
                     onChange={(e) => updateField('siret', e.target.value)}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
