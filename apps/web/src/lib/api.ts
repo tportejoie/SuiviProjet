@@ -77,6 +77,14 @@ export const createContact = (payload: {
     body: JSON.stringify(payload)
   });
 
+export const updateContact = (contactId: string, payload: {
+  active?: boolean;
+}) =>
+  fetchJson<Contact>(`/api/contacts/${contactId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload)
+  });
+
 export const getProjects = () => fetchJson<Project[]>("/api/projects");
 
 export const getNextProjectNumber = (year: number) =>

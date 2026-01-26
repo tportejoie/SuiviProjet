@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Client, User, UserRole } from '@/types';
-import { Plus, Search, Building2, Pencil, Trash2 } from 'lucide-react';
-import { createClient, deleteClient, parseClientOrder, updateClient } from '@/lib/api';
+import { Plus, Search, Building2, Pencil, Trash2, Users } from 'lucide-react';
+import { createClient, deleteClient, parseClientOrder, updateClient, updateContact } from '@/lib/api';
 
 interface ClientListProps {
   clients: Client[];
@@ -29,9 +29,12 @@ const ClientList: React.FC<ClientListProps> = ({
   onCreated,
   onDeleted
 }) => {
+  const [localContacts, setLocalContacts] = useState(contacts);
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
+  const [contactClientId, setContactClientId] = useState<string | null>(null);
+  const [isUpdatingContact, setIsUpdatingContact] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
@@ -48,6 +51,15 @@ const ClientList: React.FC<ClientListProps> = ({
   const updateField = (key: keyof ClientFormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
+
+  useEffect(() => {
+    setLocalContacts(contacts);
+  }, [contacts]);
+
+  const contactsForClient = useMemo(() => {
+    if (!contactClientId) return [];
+    return localContacts.filter((contact) => contact.clientId === contactClientId);
+  }, [contactClientId, localContacts]);
 
   const resetForm = () => {
     setForm({
@@ -190,6 +202,19 @@ const ClientList: React.FC<ClientListProps> = ({
     }
   };
 
+  const handleToggleContact = async (contactId: string, nextActive: boolean) => {
+    setIsUpdatingContact(contactId);
+    setError(null);
+    try {
+      const updated = await updateContact(contactId, { active: nextActive });
+      setLocalContacts((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+    } catch {
+      setError("Impossible de mettre a jour le contact.");
+    } finally {
+      setIsUpdatingContact(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -251,15 +276,22 @@ const ClientList: React.FC<ClientListProps> = ({
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold">
-                      {contacts.filter((c) => c.clientId === client.id && c.active).length} actifs
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="inline-flex items-center gap-2 flex-wrap justify-end">
-                      <button
-                        onClick={() => startEdit(client)}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
-                      >
+                    {localContacts.filter((c) => c.clientId === client.id && c.active).length} actifs
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="inline-flex items-center gap-2 flex-wrap justify-end">
+                    <button
+                      onClick={() => setContactClientId(client.id)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                    >
+                      <Users size={14} />
+                      Contacts
+                    </button>
+                    <button
+                      onClick={() => startEdit(client)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                    >
                         <Pencil size={14} />
                         Modifier
                       </button>
@@ -405,6 +437,49 @@ const ClientList: React.FC<ClientListProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {contactClientId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900">Contacts actifs</h3>
+              <button
+                onClick={() => setContactClientId(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                Fermer
+              </button>
+            </div>
+
+            {contactsForClient.length === 0 ? (
+              <div className="text-sm text-slate-500">Aucun contact associe a ce client.</div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {contactsForClient.map((contact) => (
+                  <div key={contact.id} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-slate-900">{contact.name}</p>
+                      <p className="text-xs text-slate-500">{contact.role} · {contact.email}</p>
+                    </div>
+                    <label className="inline-flex items-center gap-3 text-xs font-bold text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={contact.active}
+                        disabled={isUpdatingContact === contact.id}
+                        onChange={(e) => handleToggleContact(contact.id, e.target.checked)}
+                      />
+                      {contact.active ? 'Actif' : 'Inactif'}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+            {error && (
+              <div className="mt-4 text-sm text-rose-600">{error}</div>
+            )}
           </div>
         </div>
       )}
