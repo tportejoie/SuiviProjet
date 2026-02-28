@@ -40,7 +40,7 @@ export async function GET(request: Request) {
   }
 
   const entries = await prisma.timeEntry.findMany({
-    where: { projectId },
+    where: { projectId, hours: { gt: 0 } },
     orderBy: [{ year: "asc" }, { month: "asc" }, { day: "asc" }, { type: "asc" }, { hourSlot: "asc" }]
   });
   return NextResponse.json(entries);
@@ -74,5 +74,6 @@ export async function POST(request: Request) {
     return jsonError("Failed to save entry", 500);
   }
 }
+
 
 

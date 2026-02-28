@@ -130,8 +130,8 @@ const BordereauDocument: React.FC<BordereauDocumentProps> = ({
   );
 
   const entriesByType = {
-    BO: Array.from(new Set(timeEntries.filter(e => e.type === "BO").map(e => e.day))).sort((a, b) => a - b),
-    SITE: Array.from(new Set(timeEntries.filter(e => e.type === "SITE").map(e => e.day))).sort((a, b) => a - b)
+    BO: Array.from(new Set(timeEntries.filter(e => e.type === "BO" && e.hours > 0).map(e => e.day))).sort((a, b) => a - b),
+    SITE: Array.from(new Set(timeEntries.filter(e => e.type === "SITE" && e.hours > 0).map(e => e.day))).sort((a, b) => a - b)
   };
 
   const formatDay = (day: number) => {
@@ -357,3 +357,4 @@ const BordereauDocument: React.FC<BordereauDocumentProps> = ({
 };
 
 export default BordereauDocument;
+

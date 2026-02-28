@@ -17,6 +17,37 @@ export const upsertTimeEntry = async (input: {
   await assertNotLocked(input.projectId, input.year, input.month);
 
   const hourSlot = input.hourSlot ?? 0;
+
+  if (input.hours <= 0) {
+    await prisma.timeEntry.deleteMany({
+      where: {
+        projectId: input.projectId,
+        year: input.year,
+        month: input.month,
+        day: input.day,
+        type: input.type,
+        hourSlot,
+      },
+    });
+
+    await writeAuditLog({
+      entityType: "TimeEntry",
+      entityId: `${input.projectId}:${input.year}:${input.month}:${input.day}:${input.type}:${hourSlot}`,
+      action: "DELETE",
+      diffJson: {
+        projectId: input.projectId,
+        year: input.year,
+        month: input.month,
+        day: input.day,
+        type: input.type,
+        hourSlot,
+      },
+      actorName: input.actorName,
+    });
+
+    return null;
+  }
+
   const entry = await prisma.timeEntry.upsert({
     where: {
       projectId_year_month_day_type_hourSlot: {
@@ -73,6 +104,9 @@ export const listMonthEntries = async (input: {
       projectId: input.projectId,
       year: input.year,
       month: input.month,
+      hours: {
+        gt: 0,
+      },
     },
     orderBy: [{ day: "asc" }, { type: "asc" }, { hourSlot: "asc" }],
   });
