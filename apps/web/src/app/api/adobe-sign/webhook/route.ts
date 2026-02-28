@@ -246,3 +246,4 @@ export async function GET(request: Request) {
   const responseClientId = providedClientId || expectedClientId || null;
   return respondWithClientId(responseClientId);
 }
+

@@ -17,14 +17,20 @@ export const generateBordereau = async (input: {
     checksum?: string;
   };
 }) => {
+  const candidateTypes =
+    input.type === BordereauType.BA || input.type === BordereauType.BL
+      ? [input.type, BordereauType.RECTIFICATIF]
+      : [BordereauType.RECTIFICATIF];
+
   const existing = await prisma.bordereau.findFirst({
     where: {
       projectId: input.projectId,
-      type: input.type,
+      type: { in: candidateTypes },
       periodYear: input.periodYear ?? null,
       periodMonth: input.periodMonth ?? null
     },
-    include: { versions: true }
+    include: { versions: true },
+    orderBy: { createdAt: "desc" }
   });
 
   const isRectificatif = Boolean(existing && existing.status === BordereauStatus.SIGNED);

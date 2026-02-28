@@ -168,7 +168,7 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
     return bordereaux.find(bordereau =>
       bordereau.periodYear === selectedYear &&
       bordereau.periodMonth === selectedMonth &&
-      (project.type === ProjectType.AT ? bordereau.type === 'BA' : bordereau.type === 'BL')
+      (project.type === ProjectType.AT ? ["BA", "RECTIFICATIF"].includes(bordereau.type) : ["BL", "RECTIFICATIF"].includes(bordereau.type))
     );
   }, [bordereaux, project.type, selectedMonth, selectedYear]);
 
@@ -314,3 +314,4 @@ const BordereauGenerator: React.FC<BordereauGeneratorProps> = ({
 };
 
 export default BordereauGenerator;
+
